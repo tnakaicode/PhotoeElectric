@@ -58,22 +58,28 @@ l4 = "1.000   1.000   0.000"   # a2 vecator
 l5 = "1.      1.      1.   "   # d_x/d  d_y/d  d_z/d  (normally 1 1 1)
 l7 = "J     JX      JY      JZ    ICOMPX    ICOMPY   ICOMPZ"
 
-f = open("shape.dat", "w")   # "shape.dat"ファイルを書込みモードでオープン
-f.write(l1 + "\n")  # 1 行目 書込み
-f.write(str(iii) + "\n")  # 2 行目 書込み (双極子数)
-f.write(l3 + "\n")  # 3 行目 書込み (双極子数)
-f.write(l4 + "\n")  # 4 行目 書込み (双極子数)
-f.write(l5 + "\n")  # 5 行目 書込み (双極子数)
-f.write(str(Xorigin) + "   " + str(Yorigin) + "   " +
-        str(Zorigin) + "\n")  # 6 行目 書込み (双極子数)
-f.write(l7 + "\n")  # 7 行目 書込み (双極子数)
+f = open("shape.dat", "w")
+f.write(l1 + "\n")
+f.write(str(iii) + "\n")  # 双極子数
+f.write(l3 + "\n")  # 双極子数
+f.write(l4 + "\n")  # 双極子数
+f.write(l5 + "\n")  # 双極子数
+f.write(str(Xorigin) + "   " + str(Yorigin) +
+        "   " + str(Zorigin) + "\n")  # 双極子数
+f.write(l7 + "\n")  # 双極子数
 
-ii = 1                 # 座標データの書込み  x-xmin が配列中のアドレスで x が実際の座標に対応
+# 座標データの書込み  x-xmin が配列中のアドレスで x が実際の座標に対応
+ii = 1
 for z in range(zmin, zmax):
     for y in range(ymin, ymax):
         for x in range(xmin, xmax):
             if p[x - xmin, y - ymin, z - zmin] == 1:
-                f.write(str(ii) + "    " + str(x) + "    " + str(y) +
-                        "    " + str(z) + "    1      1      1" + "\n")
+                txt = ""
+                txt += str(ii) + "\t"
+                txt += str(x) + "\t"
+                txt += str(y) + "\t"
+                txt += str(z) + "\t"
+                txt += "    1      1      1" + "\n"
+                f.write(txt)
                 ii += 1
 f.close()
