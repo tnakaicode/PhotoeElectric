@@ -40,18 +40,17 @@ rp = (rp12 + rp23 * exp(2 * 1j * n2z * k0 * d2)) / \
 RsAbs = abs(rs)**2        # s-偏光反射率
 RpAbs = abs(rp)**2        # p-偏光反射率
 
-plt.figure(figsize=(8, 6))    # figure size
-plt.plot(t1Deg, RpAbs, label="Rp", linewidth=3.0,
-         color='black')        # p-偏光反射率のプロット
-plt.plot(t1Deg, RsAbs, label="Rs", linewidth=3.0,
-         color='gray')        # s-偏光反射率のプロット
-plt.xlabel("Inject (deg.)", fontsize=20)   # x 軸のラベル
-plt.ylabel("Reflect", fontsize=20)   # y 軸のラベル
-plt.title("refelect rate (depend on injection angle)",
-          fontsize=18)        # グラフタイトル
-plt.grid(True)                                 # グリッドを表示
-plt.axis([0.0, 90, 0, 1.1])                       # プロット範囲
-plt.legend(fontsize=20, loc='upper left')  # 凡例の表示とフォントサイズ
-plt.tick_params(labelsize=20)  # 軸の目盛表示とフォントサイズの指定
-plt.tight_layout()                # 枠に収まるようなグラフにするコマンド
-plt.show()                        # グラフを表示
+plt.figure()
+# p-偏光反射率のプロット
+plt.plot(t1Deg, RpAbs, label="Rp", linewidth=3.0, color='black')
+# s-偏光反射率のプロット
+plt.plot(t1Deg, RsAbs, label="Rs", linewidth=3.0, color='gray')
+plt.xlabel("Inject (deg.)", fontsize=20)
+plt.ylabel("Reflect", fontsize=20)
+plt.title("refelect rate (depend on injection angle)", fontsize=18)
+plt.grid(True)
+plt.axis([0.0, 90, 0, 1.1])
+plt.legend(fontsize=20, loc='upper left')
+plt.tick_params(labelsize=20)
+plt.tight_layout()
+plt.show()

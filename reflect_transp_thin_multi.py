@@ -40,13 +40,13 @@ rp = (rp12 + rp23 * exp(2 * 1j * n2z * k0 * d2)) / \
 RsAbs = abs(rs)**2        # s-偏光反射率
 RpAbs = abs(rp)**2        # p-偏光反射率
 
-plt.plot(d2, RpAbs, label="$R_p$", linewidth=3.0,
-         color='black')     # p-偏光反射率のプロット
-plt.xlabel(r"tin (nm)", fontsize=20)   # x 軸のラベル
-plt.ylabel("injection (deg.)", fontsize=20)  # y 軸のラベル
-plt.title("reflect rate (depend on depth)", fontsize=20)          # グラフタイトル
-plt.grid(True)                                 # グリッドを表示
-plt.axis([0.0, 500, 0, 0.2])                      # プロット範囲
-plt.tick_params(labelsize=18)  # 軸の目盛表示とフォントサイズの指定
+# p-偏光反射率のプロット
+plt.plot(d2, RpAbs, label="$R_p$", linewidth=3.0, color='black')
+plt.xlabel(r"tin (nm)", fontsize=20)
+plt.ylabel("injection (deg.)", fontsize=20)
+plt.title("reflect rate (depend on depth)", fontsize=20)
+plt.grid(True)
+plt.axis([0.0, 500, 0, 0.2])
+plt.tick_params(labelsize=18)
 plt.tight_layout()
-plt.show()                                # グラフを表示
+plt.show()

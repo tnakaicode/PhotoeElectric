@@ -386,65 +386,58 @@ if __name__ == "__main__":
         (0, 1.0, 1.0)
     )
 
-    pitch = 1.  # 周期（μm）
-    norder = 21  # 計算にとり入れる回折次数（2N+1）
+    # 周期（μm）
+    pitch = 1.
+    # 計算にとり入れる回折次数（2N+1）
+    norder = 21
 
-    disporder = range(-2, 3)  # 表示する回折次数
+    # 表示する回折次数
+    disporder = range(-2, 3)
 
-    angle = 30 * math.pi / 180  # 入射角（rad）
+    # 入射角（rad）
+    angle = 30 * np.pi / 180
 
-    wl_start = 0.5 + 1e-10  # 計算開始波長（μm）
-
-    wl_end = 1.5  # 計算終了波長（μm）
-
-    wl = np.linspace(wl_start, wl_end, 200)  # 計算波長の配列
+    # 計算開始波長（μm）
+    wl_start = 0.5 + 1e-10
+    # 計算終了波長（μm）
+    wl_end = 1.5
+    # 計算波長の配列
+    wl = np.linspace(wl_start, wl_end, 200)
 
     imax = len(wl)
 
-    ir = np.zeros([imax, norder])  # 反射回折効率の格納用
-
-    it = np.zeros([imax, norder])  # 透過回折効率の格納用
-
-    for i in range(0, imax):
-
-        ir[i, :], it[i, :] = Rcwa1d('p', wl[i],
-
-                                    2 * math.pi * math.sin(angle) / wl[i], pitch, layer, norder)
-
-        # RCWAの呼び出し
-
-    plt.figure(1)  # 透過回折効率の表示
+    # 反射回折効率の格納用
+    ir = np.zeros([imax, norder])
+    # 透過回折効率の格納用
+    it = np.zeros([imax, norder])
+    for i, w in enumerate(wl):
+        wave, knum = w, 2 * np.pi / w
+        sin_knum = np.sin(angle) * knum
+        ir[i, :], it[i, :] = Rcwa1d('p', wave, sin_knum, pitch, layer, norder)
 
     lines = ('solid', 'dashed', 'dashdot', 'dotted', 'solid')
 
+    # 透過回折効率の表示
+    plt.figure(1)
     for m in disporder:
-
-        plt.plot(wl, it[:, m + norder // 2], label="m = {0}".format(m),
-
+        txt = "m = {0}".format(m)
+        plt.plot(wl, it[:, m + norder // 2], label=txt,
                  linewidth=3, linestyle=lines[m - disporder[0]])
 
     plt.xlim(wl_start, wl_end)
-
     plt.xlabel('Wavelength ($\mu$m)', fontsize=16)
-
     plt.ylabel('Transmittance', fontsize=16)
-
     plt.legend(loc='center', frameon=False, fontsize=16)
 
-    plt.figure(2)  # 反射回折効率の表示
-
+    # 反射回折効率の表示
+    plt.figure(2)
     for m in disporder:
-
-        plt.plot(wl, ir[:, m + norder // 2], label="m = {0}".format(m),
-
+        txt = "m = {0}".format(m)
+        plt.plot(wl, ir[:, m + norder // 2], label=txt,
                  linewidth=3, linestyle=lines[m - disporder[0]])
 
     plt.xlim(wl_start, wl_end)
-
     plt.xlabel('Wavelength ($\mu$m)', fontsize=16)
-
     plt.ylabel('Reflectance', fontsize=16)
-
     plt.legend(loc='center', frameon=False, fontsize=16)
-
     plt.show()

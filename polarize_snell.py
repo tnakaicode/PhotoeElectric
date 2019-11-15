@@ -4,7 +4,7 @@ import scipy as sp
 import matplotlib as mpl
 import scipy.constants as cnt
 
-from polarize_plot import pol_plot
+from base import pol_plot
 from material import mat_refract
 
 freq = 170.0 * 10**(3 * 3)  # Hz

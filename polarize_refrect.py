@@ -3,7 +3,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from scipy import pi, sin, cos, tan, arcsin, linspace, arange, sqrt
 
-from polarize_plot import pol_plot, pol_plot_ref
+from base import pol_plot, pol_plot_ref
 from material import mat_refract
 
 n1 = mat_refract["Diamond"]
