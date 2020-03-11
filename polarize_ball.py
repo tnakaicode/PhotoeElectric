@@ -7,6 +7,8 @@ import math
 from scipy.special import spherical_jn, spherical_yn
 from scipy.special import jv, jvp, hankel1, h1vp
 
+sys.path.append(os.path.join('./'))
+from base import plot2d
 import RI
 
 
@@ -98,23 +100,8 @@ Qabs_A = Cabs_A / ((r**2) * np.pi)
 Qsca_B = Csca_B / ((r**2) * np.pi)
 Qabs_B = Cabs_B / ((r**2) * np.pi)
 
-plt.figure(figsize=(8, 6))
-plt.plot(WLx, Qsca_A, label=r"$Q_{\rm sca}$", linewidth=3.0, color='black')
-plt.plot(WLx, Qabs_A, label=r"$Q_{\rm abs}$", linewidth=3.0, color='gray')
-plt.axis([400, 700, 0, 12])
-plt.xlabel("wave (nm)", fontsize=22)
-plt.ylabel("scat / absorb rate", fontsize=22)
-plt.tick_params(labelsize=20)  # scale fontsize=18pt
-plt.legend(fontsize=20, loc='upper left')
-plt.tight_layout()
-
-plt.figure(figsize=(8, 6))
-plt.plot(WLx, Qsca_B, label=r"$Q_{\rm sca}$", linewidth=3.0, color='black')
-plt.plot(WLx, Qabs_B, label=r"$Q_{\rm abs}$", linewidth=3.0, color='gray')
-plt.axis([400, 700, 0, 4])
-plt.xlabel("wave (nm)", fontsize=22)
-plt.ylabel("scat / absorb rate", fontsize=22)
-plt.tick_params(labelsize=20)  # scale fontsize=18pt
-plt.legend(fontsize=20, loc='upper right')
-plt.tight_layout()
-plt.show()
+obj = plot2d(aspect="auto")
+obj.pol_plot_ref(WLx, Qsca_A, Qsca_B, pngname="img/" +
+                 obj.rootname + "_Qsca.png")
+obj.pol_plot_ref(WLx, Qabs_A, Qabs_B, pngname="img/" +
+                 obj.rootname + "_Qabs.png")

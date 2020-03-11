@@ -35,44 +35,6 @@ import logging
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 
 
-def pol_plot(tdeg, Rp, Tp, Rs, Ts):
-    plt.figure(figsize=(8, 6))
-    plt.plot(tdeg, Rp, label=r"$R_{12}^{\rm{p}}$",
-             linewidth=3.0, color='black', linestyle='dashed')
-    plt.plot(tdeg, Tp, label=r"$T_{12}^{\rm{p}}$",
-             linewidth=3.0, color='black')
-    plt.plot(tdeg, Rs, label=r"$R_{12}^{\rm{s}}$",
-             linewidth=3.0, color='gray', linestyle='dashed')
-    plt.plot(tdeg, Ts, label=r"$T_{12}^{\rm{s}}$", linewidth=3.0, color='gray')
-
-    plt.xlabel("Inject (deg.)", fontsize=20)
-    plt.ylabel("Reflect", fontsize=20)
-    plt.title("refelect and absorb", fontsize=18)
-
-    plt.grid(True)
-    plt.axis([0.0, 90, -1, 1])
-    plt.legend(fontsize=20, loc='lower right')
-    plt.tick_params(labelsize=20)
-    plt.tight_layout()
-
-
-def pol_plot_ref(tdeg, Rp, Rs):
-    plt.figure(figsize=(8, 6))
-    plt.plot(tdeg, Rp, label=r"$R_{12}^{\rm{p}}$",
-             linewidth=3.0, color='black')
-    plt.plot(tdeg, Rs, label=r"$R_{12}^{\rm{s}}$", linewidth=3.0, color='gray')
-
-    plt.xlabel("Inject (deg.)", fontsize=20)
-    plt.ylabel("Reflect", fontsize=20)
-    plt.title("refelect rate", fontsize=18)
-
-    plt.grid(True)
-    #plt.axis([0.0, 90, -1, 1])
-    plt.legend(fontsize=20, loc='lower right')
-    plt.tick_params(labelsize=20)
-    plt.tight_layout()
-
-
 def create_tempdir(flag=1):
     print(datetime.date.today())
     datenm = "{0:%Y%m%d}".format(datetime.date.today())
@@ -174,6 +136,37 @@ class plot2d (SetDir):
             plt.show()
         except AttributeError:
             pass
+
+    def pol_plot(self, tdeg, Rp, Tp, Rs, Ts, aspect="auto", pngname=None):
+        self.new_fig(aspect=aspect)
+        self.axs.plot(tdeg, Rp, label=r"$R_{12}^{\rm{p}}$",linewidth=3.0, color='black', linestyle='dashed')
+        self.axs.plot(tdeg, Tp, label=r"$T_{12}^{\rm{p}}$",linewidth=3.0, color='black')
+        self.axs.plot(tdeg, Rs, label=r"$R_{12}^{\rm{s}}$",linewidth=3.0, color='gray', linestyle='dashed')
+        self.axs.plot(tdeg, Ts, label=r"$T_{12}^{\rm{s}}$",linewidth=3.0, color='gray')
+
+        self.axs.set_xlabel("Inject (deg.)", fontsize=20)
+        self.axs.set_ylabel("Reflect", fontsize=20)
+        self.axs.set_title("refelect and absorb", fontsize=18)
+
+        #plt.axis([0.0, 90, -1, 1])
+        self.axs.legend(fontsize=20, loc='lower right')
+        self.axs.tick_params(labelsize=20)
+        self.fig.tight_layout()
+        self.SavePng(pngname)
+
+    def pol_plot_ref(self, tdeg, Rp, Rs, aspect="auto", pngname=None):
+        self.new_fig(aspect=aspect)
+        self.axs.plot(tdeg, Rp, label=r"$R_{12}^{\rm{p}}$",linewidth=3.0, color='black')
+        self.axs.plot(tdeg, Rs, label=r"$R_{12}^{\rm{s}}$",linewidth=3.0, color='gray')
+        self.axs.set_xlabel("Inject (deg.)", fontsize=20)
+        self.axs.set_ylabel("Reflect", fontsize=20)
+        self.axs.set_title("refelect rate", fontsize=18)
+        
+        #plt.axis([0.0, 90, -1, 1])
+        self.axs.legend(fontsize=20, loc='lower right')
+        self.axs.tick_params(labelsize=20)
+        self.fig.tight_layout()
+        self.SavePng(pngname)
 
 
 class plot3d (SetDir):

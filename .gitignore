@@ -5,5 +5,12 @@
 __pycache__/
 *.py[cod]
 
+# Temp
 tmp/*
 field/*
+cfd_python/ch10/*
+temp_*/*
+*/temp_*/*
+
+# cpp
+a.exe
