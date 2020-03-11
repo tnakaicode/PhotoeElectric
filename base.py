@@ -3,6 +3,14 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as tri
 import sys
 import pickle
+import json
+import time
+import os
+import glob
+import shutil
+import datetime
+import platform
+from optparse import OptionParser
 from matplotlib import animation
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.mplot3d import Axes3D
@@ -25,6 +33,7 @@ from OCCUtils.Construct import dir_to_vec, vec_to_dir
 
 import logging
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
+
 
 def pol_plot(tdeg, Rp, Tp, Rs, Ts):
     plt.figure(figsize=(8, 6))
@@ -63,24 +72,102 @@ def pol_plot_ref(tdeg, Rp, Rs):
     plt.tick_params(labelsize=20)
     plt.tight_layout()
 
-class plot2d (object):
+
+def create_tempdir(flag=1):
+    print(datetime.date.today())
+    datenm = "{0:%Y%m%d}".format(datetime.date.today())
+    dirnum = len(glob.glob("./temp_" + datenm + "*/"))
+    if flag == -1 or dirnum == 0:
+        tmpdir = "./temp_{}{:03}/".format(datenm, dirnum)
+        os.makedirs(tmpdir)
+        fp = open(tmpdir + "not_ignore.txt", "w")
+        fp.close()
+    else:
+        tmpdir = "./temp_{}{:03}/".format(datenm, dirnum - 1)
+    print(tmpdir)
+    return tmpdir
+
+
+class SetDir (object):
 
     def __init__(self):
+        self.tempname = ""
+        self.rootname = ""
+        self.create_tempdir()
+
+        pyfile = sys.argv[0]
+        self.filename = os.path.basename(pyfile)
+        self.rootname, ext_name = os.path.splitext(self.filename)
+        self.tempname = self.tmpdir + self.rootname
+        print(self.rootname)
+
+    def create_tempdir(self, flag=1):
+        print(datetime.date.today())
+        self.datenm = "{0:%Y%m%d}".format(datetime.date.today())
+        self.dirnum = len(glob.glob("./temp_" + self.datenm + "*/"))
+        if flag == -1 or self.dirnum == 0:
+            self.tmpdir = "./temp_{}{:03}/".format(self.datenm, self.dirnum)
+            os.makedirs(self.tmpdir)
+            fp = open(self.tmpdir + "not_ignore.txt", "w")
+            fp.close()
+        else:
+            self.tmpdir = "./temp_{}{:03}/".format(
+                self.datenm, self.dirnum - 1)
+        print(self.tmpdir)
+
+
+class plot2d (SetDir):
+
+    def __init__(self, aspect="equal"):
+        SetDir.__init__(self)
+        self.new_fig(aspect)
+
+    def new_fig(self, aspect="equal"):
         self.fig, self.axs = plt.subplots()
-        self.axs.set_aspect('equal')
+        self.axs.set_aspect(aspect)
         self.axs.xaxis.grid()
         self.axs.yaxis.grid()
 
+    def add_axs(self, row=1, col=1, num=1, aspect="auto"):
+        self.axs.set_axis_off()
+        axs = self.fig.add_subplot(row, col, num)
+        axs.set_aspect(aspect)
+        axs.xaxis.grid()
+        axs.yaxis.grid()
+        return axs
+
     def div_axs(self):
         self.div = make_axes_locatable(self.axs)
-        self.axs.set_aspect('equal')
+        # self.axs.set_aspect('equal')
 
         self.ax_x = self.div.append_axes(
             "bottom", 1.0, pad=0.5, sharex=self.axs)
-        self.ax_x.grid()
+        self.ax_x.xaxis.grid(True, zorder=0)
+        self.ax_x.yaxis.grid(True, zorder=0)
+
         self.ax_y = self.div.append_axes(
             "right", 1.0, pad=0.5, sharey=self.axs)
-        self.ax_y.grid()
+        self.ax_y.xaxis.grid(True, zorder=0)
+        self.ax_y.yaxis.grid(True, zorder=0)
+
+    def contourf_sub(self, mesh, func, sxy=[0, 0]):
+        self.new_fig()
+        self.div_axs()
+        nx, ny = mesh[0].shape
+        sx, sy = sxy
+        xs, xe = mesh[0][0, 0], mesh[0][0, -1]
+        ys, ye = mesh[1][0, 0], mesh[1][-1, 0]
+        mx = np.searchsorted(mesh[0][0, :], sx) - 1
+        my = np.searchsorted(mesh[1][:, 0], sy) - 1
+
+    def contourf_tri(self, x, y, z):
+        self.new_fig()
+        self.axs.tricontourf(x, y, z, cmap="jet")
+
+    def SavePng(self, pngname=None):
+        if pngname == None:
+            pngname = self.tmpdir + self.rootname + ".png"
+        self.fig.savefig(pngname)
 
     def Show(self):
         try:
@@ -89,9 +176,10 @@ class plot2d (object):
             pass
 
 
-class plot3d (object):
+class plot3d (SetDir):
 
     def __init__(self):
+        SetDir.__init__(self)
         self.fig = plt.figure()
         self.axs = self.fig.add_subplot(111, projection='3d')
         #self.axs = self.fig.gca(projection='3d')
@@ -194,10 +282,11 @@ def gen_ellipsoid(axs=gp_Ax3(), rxyz=[10, 20, 30]):
     return ellips
 
 
-class plotocc (object):
+class plotocc (SetDir):
 
     def __init__(self):
         self.display, self.start_display, self.add_menu, self.add_functionto_menu = init_display()
+        SetDir.__init__(self)
 
     def show_box(self, axs=gp_Ax3(), lxyz=[100, 100, 100]):
         box = make_box(*lxyz)
@@ -250,6 +339,7 @@ class plotocc (object):
 
     def show(self):
         self.display.FitAll()
+        self.display.View.Dump(self.tempname + ".png")
         self.start_display()
 
 
