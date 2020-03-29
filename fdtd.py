@@ -14,12 +14,13 @@ class Fdtd(Preprocess):
         self.save_idv()
         numt = 0
         for jt in range(self.mt):
-            print("{:d}\t{:d}\t{}".format(jt, self.mt, time.ctime(time.time())))
-            
+            print("{:d}\t{:d}\t{}".format(
+                jt, self.mt, time.ctime(time.time())))
+
             # update E-field
             self.sweep_isolate_e()
             self.sweep_boundary_e()
-            
+
             # E-field source injection
             if self.source == 'plane':
                 self.normalinc_p_e(jt)
@@ -36,7 +37,7 @@ class Fdtd(Preprocess):
             # H-field source injection
             if self.source == 'plane':
                 self.normalinc_p_h()
-            
+
             # store H and E fields
             if (jt + 1) % self.saveint == 0 and numt < self.savenum:
                 self.save_ehfield(numt)
@@ -753,19 +754,23 @@ class Fdtd(Preprocess):
                 - self.psiHyz1p[izz, iy1:iy2, ix1:ix2] * self.coefh
 
     def sweep_isolate_e(self):
-        ix2, iy2. iz2 = self.mxx, self.myy, self.mzz
-        
+        ix2, iy2, iz2 = self.mxx, self.myy, self.mzz
+
         """
         Ex development
         """
-        
+
         ix1, iy1, iz1 = 0, 1, 1
-        
+
         for iy in range(iy1, iy2):
-            self.Ex2[iz1:iz2, iy, ix1:ix2] = self.Ex1[iz1:iz2, iy, ix1:ix2] * self.ce1[self.idx[iz1:iz2, iy, ix1:ix2]] - self.px2[iz1:iz2, iy, ix1:ix2] * self.ce3[self.idx[iz1:iz2, iy, ix1:ix2]] + (self.Hz1[iz1:iz2, iy, ix1:ix2] - self.Hz1[iz1:iz2, iy - 1, ix1:ix2]) * self.ckey[iy] * self.ce2[self.idx[iz1:iz2, iy, ix1:ix2]]
+            self.Ex2[iz1:iz2, iy, ix1:ix2] = self.Ex1[iz1:iz2, iy, ix1:ix2] * self.ce1[self.idx[iz1:iz2, iy, ix1:ix2]] - self.px2[iz1:iz2, iy, ix1:ix2] * \
+                self.ce3[self.idx[iz1:iz2, iy, ix1:ix2]] + (self.Hz1[iz1:iz2, iy, ix1:ix2] - self.Hz1[iz1:iz2,
+                                                                                                      iy - 1, ix1:ix2]) * self.ckey[iy] * self.ce2[self.idx[iz1:iz2, iy, ix1:ix2]]
 
         for iz in range(iz1, iz2):
-            self.Ex2[iz, iy1:iy2, ix1:ix2] = self.Ex2[iz, iy1:iy2, ix1:ix2] - (self.Hy1[iz, iy1:iy2, ix1:ix2] - self.Hy1[iz - 1, iy1:iy2, ix1:ix2]) * self.ckez[iz] * self.ce2[self.idx[iz, iy1:iy2, ix1:ix2]]
+            self.Ex2[iz, iy1:iy2, ix1:ix2] = self.Ex2[iz, iy1:iy2, ix1:ix2] - \
+                (self.Hy1[iz, iy1:iy2, ix1:ix2] - self.Hy1[iz - 1, iy1:iy2, ix1:ix2]
+                 ) * self.ckez[iz] * self.ce2[self.idx[iz, iy1:iy2, ix1:ix2]]
 
         """
         Ey development
@@ -774,10 +779,13 @@ class Fdtd(Preprocess):
         ix1, iy1, iz1 = 1, 0, 1
 
         for iz in range(iz1, iz2):
-            self.Ey2[iz, iy1:iy2, ix1:ix2] = self.Ey1[iz, iy1:iy2, ix1:ix2] * self.ce1[self.idy[iz, iy1:iy2, ix1:ix2]] - self.py2[iz, iy1:iy2, ix1:ix2] * self.ce3[self.idy[iz, iy1:iy2, ix1:ix2]] + (self.Hx1[iz, iy1:iy2, ix1:ix2] - self.Hx1[iz - 1, iy1:iy2, ix1:ix2]) * self.ckez[iz] * self.ce2[self.idy[iz, iy1:iy2, ix1:ix2]]
+            self.Ey2[iz, iy1:iy2, ix1:ix2] = self.Ey1[iz, iy1:iy2, ix1:ix2] * self.ce1[self.idy[iz, iy1:iy2, ix1:ix2]] - self.py2[iz, iy1:iy2, ix1:ix2] * self.ce3[self.idy[iz,
+                                                                                                                                                                            iy1:iy2, ix1:ix2]] + (self.Hx1[iz, iy1:iy2, ix1:ix2] - self.Hx1[iz - 1, iy1:iy2, ix1:ix2]) * self.ckez[iz] * self.ce2[self.idy[iz, iy1:iy2, ix1:ix2]]
 
         for ix in range(ix1, ix2):
-            self.Ey2[iz1:iz2, iy1:iy2, ix] = self.Ey2[iz1:iz2, iy1:iy2, ix] - (self.Hz1[iz1:iz2, iy1:iy2, ix] - self.Hz1[iz1:iz2, iy1:iy2, ix - 1]) * self.ckex[ix] * self.ce2[self.idy[iz1:iz2, iy1:iy2, ix]]
+            self.Ey2[iz1:iz2, iy1:iy2, ix] = self.Ey2[iz1:iz2, iy1:iy2, ix] - \
+                (self.Hz1[iz1:iz2, iy1:iy2, ix] - self.Hz1[iz1:iz2, iy1:iy2, ix - 1]
+                 ) * self.ckex[ix] * self.ce2[self.idy[iz1:iz2, iy1:iy2, ix]]
 
         """
         Ez development
@@ -786,13 +794,17 @@ class Fdtd(Preprocess):
         ix1, iy1, iz1 = 1, 1, 0
 
         for ix in range(ix1, ix2):
-            self.Ez2[iz1:iz2, iy1:iy2, ix] = self.Ez1[iz1:iz2, iy1:iy2, ix] * self.ce1[self.idz[iz1:iz2, iy1:iy2, ix]] - self.pz2[iz1:iz2, iy1:iy2, ix] * self.ce3[self.idz[iz1:iz2, iy1:iy2, ix]] + (self.Hy1[iz1:iz2, iy1:iy2, ix] - self.Hy1[iz1:iz2, iy1:iy2, ix - 1]) * self.ckex[ix] * self.ce2[self.idz[iz1:iz2, iy1:iy2, ix]]
+            self.Ez2[iz1:iz2, iy1:iy2, ix] = self.Ez1[iz1:iz2, iy1:iy2, ix] * self.ce1[self.idz[iz1:iz2, iy1:iy2, ix]] - self.pz2[iz1:iz2, iy1:iy2, ix] * \
+                self.ce3[self.idz[iz1:iz2, iy1:iy2, ix]] + (self.Hy1[iz1:iz2, iy1:iy2, ix] - self.Hy1[iz1:iz2,
+                                                                                                      iy1:iy2, ix - 1]) * self.ckex[ix] * self.ce2[self.idz[iz1:iz2, iy1:iy2, ix]]
 
         for iy in range(iy1, iy2):
-            self.Ez2[iz1:iz2, iy, ix1:ix2] = self.Ez2[iz1:iz2, iy, ix1:ix2] - (self.Hx1[iz1:iz2, iy, ix1:ix2] - self.Hx1[iz1:iz2, iy - 1, ix1:ix2]) * self.ckey[iy] * self.ce2[self.idz[iz1:iz2, iy, ix1:ix2]]
+            self.Ez2[iz1:iz2, iy, ix1:ix2] = self.Ez2[iz1:iz2, iy, ix1:ix2] - \
+                (self.Hx1[iz1:iz2, iy, ix1:ix2] - self.Hx1[iz1:iz2, iy - 1, ix1:ix2]
+                 ) * self.ckey[iy] * self.ce2[self.idz[iz1:iz2, iy, ix1:ix2]]
 
     def sweep_boundary_e(self):
-        ix2, iy2. iz2 = self.mxx, self.myy, self.mzz
+        ix2, iy2, iz2 = self.mxx, self.myy, self.mzz
 
         # -x-side boundary
         # Ey PML
@@ -800,8 +812,11 @@ class Fdtd(Preprocess):
         iy1, iz1 = 0, 1
 
         for ix in range(1, self.mx1):
-            self.psiEyx2m[iz1:iz2, iy1:iy2, ix] = self.psiEyx1m[iz1:iz2, iy1:iy2, ix] * self.cbxe[ix]  + (self.Hz1[iz1:iz2, iy1:iy2, ix] - self.Hz1[iz1:iz2, iy1:iy2, ix - 1])  * self.ccxe[ix]
-            self.Ey2[iz1:iz2, iy1:iy2, ix] = self.Ey2[iz1:iz2, iy1:iy2, ix] - self.psiEyx2m[iz1:iz2, iy1:iy2, ix] * self.ce2[self.idy[iz1:iz2, iy1:iy2, ix]]
+            self.psiEyx2m[iz1:iz2, iy1:iy2, ix] = self.psiEyx1m[iz1:iz2, iy1:iy2, ix] * self.cbxe[ix] + (
+                self.Hz1[iz1:iz2, iy1:iy2, ix] - self.Hz1[iz1:iz2, iy1:iy2, ix - 1]) * self.ccxe[ix]
+            self.Ey2[iz1:iz2, iy1:iy2, ix] = self.Ey2[iz1:iz2, iy1:iy2, ix] - \
+                self.psiEyx2m[iz1:iz2, iy1:iy2, ix] * \
+                self.ce2[self.idy[iz1:iz2, iy1:iy2, ix]]
         self.Ey2[:, :, 0] = 0.0
 
         # Ez PML
@@ -809,14 +824,17 @@ class Fdtd(Preprocess):
         iy1, iz1 = 1, 0
 
         for ix in range(1, self.mx1):
-            self.psiEzx2m[iz1:iz2, iy1:iy2, ix] = self.psiEzx1m[iz1:iz2, iy1:iy2, ix] * self.cbxe[ix] + (self.Hy1[iz1:iz2, iy1:iy2, ix] - self.Hy1[iz1:iz2, iy1:iy2, ix - 1])  * self.ccxe[ix]
-            self.Ez2[iz1:iz2, iy1:iy2, ix] = self.Ez2[iz1:iz2, iy1:iy2, ix] + self.psiEzx2m[iz1:iz2, iy1:iy2, ix] * self.ce2[self.idz[iz1:iz2, iy1:iy2, ix]]
+            self.psiEzx2m[iz1:iz2, iy1:iy2, ix] = self.psiEzx1m[iz1:iz2, iy1:iy2, ix] * self.cbxe[ix] + (
+                self.Hy1[iz1:iz2, iy1:iy2, ix] - self.Hy1[iz1:iz2, iy1:iy2, ix - 1]) * self.ccxe[ix]
+            self.Ez2[iz1:iz2, iy1:iy2, ix] = self.Ez2[iz1:iz2, iy1:iy2, ix] + \
+                self.psiEzx2m[iz1:iz2, iy1:iy2, ix] * \
+                self.ce2[self.idz[iz1:iz2, iy1:iy2, ix]]
         self.Ez2[:, :, 0] = 0.0
 
         # +x-side boundary
         # Ey PML
 
-        iy1,iz1 = 0,1
+        iy1, iz1 = 0, 1
 
         for ix in range(self.mx2 + 1, self.mxx):
 

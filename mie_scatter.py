@@ -47,6 +47,7 @@ for n in nRange:
     a = []
     b = []
     for k in kRange:
+        print(n, k)
         m = n + k * 1.0j
         Qsca, Qabs, Qback = ps.fastMieQ(m, w, d)
         s.append(Qsca)

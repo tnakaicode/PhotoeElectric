@@ -9,8 +9,6 @@ from scipy.integrate import odeint
 sys.path.append(os.path.join('./'))
 from base import plot2d
 
-obj = plot2d()
-
 
 def refract_1d(x=0, cff=2, rng=0.8):
     val = cff - (cff - 1) / (1 + np.exp(-(x - cff**2) / rng))
@@ -41,12 +39,11 @@ t_range = np.arange(0, 20, 0.01)
 sol = odeint(diff_y, r_0 + v_0, t_range)
 
 X, Y = np.mgrid[0:20:1000j, 0:20:1000j]
+
+obj = plot2d()
 obj.axs.plot(sol[:, 0], sol[:, 1], 'y', linewidth=2)
 #pcm = obj.axs.pcolormesh(X, Y, n([X, Y]), cmap='jet', vmin=1)
 pcm = obj.axs.contourf(X, Y, n([X, Y]), cmap='jet')
-#bar = plt.colorbar(pcm)
-#bar.ax.set_ylabel("n  Refractive index")
-
 obj.axs.set_xlabel("cm")
 obj.axs.set_ylabel("cm")
-obj.SavePng("img/" + obj.rootname + ".png")
+obj.SavePng()
