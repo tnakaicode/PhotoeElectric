@@ -101,7 +101,5 @@ Qsca_B = Csca_B / ((r**2) * np.pi)
 Qabs_B = Cabs_B / ((r**2) * np.pi)
 
 obj = plot2d(aspect="auto")
-obj.pol_plot_ref(WLx, Qsca_A, Qsca_B, pngname="img/" +
-                 obj.rootname + "_Qsca.png")
-obj.pol_plot_ref(WLx, Qabs_A, Qabs_B, pngname="img/" +
-                 obj.rootname + "_Qabs.png")
+obj.pol_plot_ref(WLx, Qsca_A, Qsca_B, pngname=obj.tempname + "_Qsca.png")
+obj.pol_plot_ref(WLx, Qabs_A, Qabs_B, pngname=obj.tempname + "_Qabs.png")

@@ -75,4 +75,4 @@ obj.axs.set_ylabel("scat / absorb rate", fontsize=22)
 #plt.axis([400, 800, 0, 5])
 obj.axs.legend(fontsize=20, loc='upper right')
 obj.axs.tick_params(labelsize=18)  # Show Legend
-obj.SavePng("img/" + obj.rootname + "png")
+obj.SavePng()

@@ -88,8 +88,10 @@ for n in range(qq):
 Qsca = Csca / ((r2**2) * np.pi)    # 散乱効率
 Qabs = Cabs / ((r2**2) * np.pi)    # 吸収効率
 
-plt.plot(RI.WLx, abs(Qsca), label=r"$Q_{\rm sca}$", linewidth=3.0, color='black')
-plt.plot(RI.WLx, abs(Qabs), label=r"$Q_{\rm abs}$", linewidth=3.0, color='gray')
+plt.plot(RI.WLx, abs(Qsca),
+         label=r"$Q_{\rm sca}$", linewidth=3.0, color='black')
+plt.plot(RI.WLx, abs(Qabs),
+         label=r"$Q_{\rm abs}$", linewidth=3.0, color='gray')
 plt.xlabel("wave (nm)", fontsize=22)
 plt.ylabel("scat / absorb rate", fontsize=22)
 plt.title("scat / absorb rate", fontsize=22)
