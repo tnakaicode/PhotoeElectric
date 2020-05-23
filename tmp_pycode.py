@@ -19,7 +19,7 @@ if __name__ == '__main__':
     argvs = sys.argv
     parser = OptionParser()
     parser.add_option("--dir", dest="dir", default="./")
-    parser.add_option("--pxyz", dest="point",
+    parser.add_option("--pxyz", dest="pxyz",
                       default=[0.0, 0.0, 0.0], type="float", nargs=3)
     opt, argc = parser.parse_args(argvs)
     print(opt, argc)
