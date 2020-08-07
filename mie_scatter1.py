@@ -1,13 +1,11 @@
-import numpy as np
+import PyMieScatt as ps
 import matplotlib.pyplot as plt
+import numpy as np
+from time import time
 import matplotlib.colors as colors
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
-
-from time import time
 from scipy.ndimage import zoom
-
-import PyMieScatt as ps
 
 
 def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
@@ -16,18 +14,9 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     return new_cmap
 
 
-"""
-This example illustrates the algorithm used by the contour intersection method. 
-It will plot the Qabs, Qsca, and Qback surface and show how the measurement contours intersect in n-k space. 
-The inversion algorithm only generates the lower-right plot on line 126 of this script. 
-The rest is entirely illustrative, but uses forward Mie calculations in the loop on line 46. 
-This script requires significant overhead from matplotlib (even more so since the 2.1 update). 
-The actual inversion algorithm runs much faster.
-"""
-
 d = 300
 w = 375
-m = 1.50 + 0.95j
+m = 1.77 + 0.63j
 
 nMin = 1.33
 nMax = 3
@@ -56,7 +45,6 @@ for n in nRange:
     a = []
     b = []
     for k in kRange:
-        print(n, k)
         m = n + k * 1.0j
         Qsca, Qabs, Qback = ps.fastMieQ(m, w, d)
         s.append(Qsca)
@@ -80,7 +68,9 @@ c3 = truncate_colormap(cm.Greens, 0.2, 1, n=256)
 xMin, xMax = nMin, nMax
 yMin, yMax = kMin, kMax
 
-fig1 = plt.figure()
+plt.close('all')
+fig1 = plt.figure(figsize=(10.08, 8))
+
 ax1 = plt.subplot2grid((2, 2), (0, 0), projection='3d')
 ax2 = plt.subplot2grid((2, 2), (0, 1), projection='3d')
 ax3 = plt.subplot2grid((2, 2), (1, 0), projection='3d')
@@ -95,35 +85,37 @@ qbackerrs = [Qm[2] - Qm[2] * err, Qm[2] + Qm[2] * err]
 
 ax1.plot_surface(nSurf, kSurf, QscaSurf, rstride=1,
                  cstride=1, cmap=c1, alpha=0.5)
-ax1.contour(nSurf, kSurf, QscaSurf, linewidths=2,
-            colors='r', linestyles='dashdot')
-ax1.contour(nSurf, kSurf, QscaSurf, linewidths=0.5,
+ax1.contour(nSurf, kSurf, QscaSurf,
+            Qm[0], linewidths=2, colors='r', linestyles='dashdot')
+ax1.contour(nSurf, kSurf, QscaSurf, qscaerrs, linewidths=0.5,
             colors='r', linestyles='dashdot', alpha=0.75)
-ax1.contour(nSurf, kSurf, QscaSurf, linewidths=2,
-            colors='r', linestyles='dashdot', offset=0)
-ax1.contourf(nSurf, kSurf, QscaSurf, colors='r', offset=0, alpha=0.25)
+ax1.contour(nSurf, kSurf, QscaSurf,
+            Qm[0], linewidths=2, colors='r', linestyles='dashdot', offset=0)
+ax1.contourf(nSurf, kSurf, QscaSurf, qscaerrs,
+             colors='r', offset=0, alpha=0.25)
 
 ax2.plot_surface(nSurf, kSurf, QabsSurf, rstride=1,
                  cstride=1, cmap=c2, alpha=0.5)
-ax2.contour(nSurf, kSurf, QabsSurf, linewidths=2,
-            colors='b', linestyles='solid')
-ax2.contour(nSurf, kSurf, QabsSurf, linewidths=0.5,
+ax2.contour(nSurf, kSurf, QabsSurf,
+            Qm[1], linewidths=2, colors='b', linestyles='solid')
+ax2.contour(nSurf, kSurf, QabsSurf, qabserrs, linewidths=0.5,
             colors='b', linestyles='solid', alpha=0.75)
-ax2.contour(nSurf, kSurf, QabsSurf, linewidths=2,
-            colors='b', linestyles='solid', offset=0)
-ax2.contourf(nSurf, kSurf, QabsSurf, colors='b', offset=0, alpha=0.25)
+ax2.contour(nSurf, kSurf, QabsSurf,
+            Qm[1], linewidths=2, colors='b', linestyles='solid', offset=0)
+ax2.contourf(nSurf, kSurf, QabsSurf, qabserrs,
+             colors='b', offset=0, alpha=0.25)
 
 ax3.plot_surface(nSurf, kSurf, QbackSurf, rstride=1,
                  cstride=1, cmap=c3, alpha=0.5)
-ax3.contour(nSurf, kSurf, QbackSurf, linewidths=2,
-            colors='g', linestyles='dotted')
-ax3.contour(nSurf, kSurf, QbackSurf, linewidths=0.5,
+ax3.contour(nSurf, kSurf, QbackSurf,
+            Qm[2], linewidths=2, colors='g', linestyles='dotted')
+ax3.contour(nSurf, kSurf, QbackSurf, qbackerrs, linewidths=0.5,
             colors='g', linestyles='dotted', alpha=0.75)
-ax3.contour(nSurf, kSurf, QbackSurf, linewidths=2,
-            colors='g', linestyles='dotted', offset=0)
-ax3.contourf(nSurf, kSurf, QbackSurf, colors='g', offset=0, alpha=0.25)
+ax3.contour(nSurf, kSurf, QbackSurf,
+            Qm[2], linewidths=2, colors='g', linestyles='dotted', offset=0)
+ax3.contourf(nSurf, kSurf, QbackSurf, qbackerrs,
+             colors='g', offset=0, alpha=0.25)
 
-#boxLabels = ["Qsca", "Qabs", "Qback"]
 boxLabels = ["Qsca", "Qabs", "Qback"]
 
 yticks = np.arange(kMax, kMin - 0.25, -0.25)  # [1,0.75,0.5,0.25,0]
@@ -149,18 +141,17 @@ for a, t in zip([ax1, ax2, ax3], boxLabels):
     a.set_zlabel(t, fontsize=18, labelpad=-10, rotation=90)
 
 Qm = [(q, q * err) for q in Qm]
-giv = ps.ContourIntersection(Qm[0], Qm[1], w, d, gridPoints=200,
+giv = ps.ContourIntersection(Qm[0], Qm[1], w, d, Qback=Qm[2], gridPoints=200,
                              nMin=nMin, nMax=nMax, kMin=kMin, kMax=kMax, axisOption=1, fig=fig1, ax=ax4)
 ax4.set_xlim(nMin, nMax)
 ax4.yaxis.tick_right()
 ax4.yaxis.set_label_position("right")
 ax4.set_title("")
 ax4.set_yscale('linear')
-#l = [giv[-1]['Qsca'], giv[-1]['Qabs'], giv[-1]['Qback']]
-l = [giv[-1]['Qsca'], giv[-1]['Qabs']]
-#[x.set_label(tx) for x, tx in zip(["Qsca", "Qabs"], boxLabels)]
-#h = [x.get_label() for x in l]
-#ax4.legend(l, h, fontsize=16, loc='upper right')
+l = [giv[-1]['Qsca'], giv[-1]['Qabs'], giv[-1]['Qback']]
+[x.set_label(tx) for x, tx in zip(l, boxLabels)]
+h = [x.get_label() for x in l]
+ax4.legend(l, h, fontsize=16, loc='upper right')
 
 plt.suptitle(
     "m={n:1.3f}+{k:1.3f}i".format(n=giv[0][0].real, k=giv[0][0].imag), fontsize=24)
@@ -168,7 +159,6 @@ plt.suptitle(
 plt.tight_layout()
 plt.savefig(
     "{n:1.2f}+{k:1.2f}i.png".format(n=giv[0][0].real, k=giv[0][0].imag))
-# plt.show()
 
 end = time()
 print("Done in {t:1.2f} seconds.".format(t=end - start))
