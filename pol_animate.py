@@ -14,6 +14,7 @@ from base import plot2d, create_tempdir
 
 import logging
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
+logging.getLogger('PIL').setLevel(logging.ERROR)
 
 if __name__ == '__main__':
     argvs = sys.argv
