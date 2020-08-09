@@ -7,8 +7,8 @@ def mMATs(n1=1.0, n2=1.0, t0=0.0, knum=1.0):
     """
     t1 = np.deg2rad(t0)
     t2 = np.arcsin((n1 / n2) * np.sin(t1))
-    s1, s2 = np.sin(t1), np.sin(t1)
-    c1, c2 = np.cos(t1), np.sqrt(1 - s2**2, dtype=complex)
+    s1, s2 = np.sin(t1), np.sin(t2)
+    c1, c2 = np.cos(t1), np.sqrt(1 - s2**2)
     n1z, n2z = n1 * c1, n2 * n2
     k1z = knum * n1z
     k2z = knum * n2z
@@ -26,8 +26,8 @@ def mMATp(n1=1.0, n2=1.0, t0=0.0, knum=1.0):
     """
     t1 = np.deg2rad(t0)
     t2 = np.arcsin((n1 / n2) * np.sin(t1))
-    s1, s2 = np.sin(t1), np.sin(t1)
-    c1, c2 = np.cos(t1), np.sqrt(1 - s2**2, dtype=complex)
+    s1, s2 = np.sin(t1), np.sin(t2)
+    c1, c2 = np.cos(t1), np.sqrt(1 - s2**2)
     n1z, n2z = n1 * c1, n2 * n2
     k1z = knum * n1z
     k2z = knum * n2z
