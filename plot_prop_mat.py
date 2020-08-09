@@ -22,27 +22,28 @@ if __name__ == '__main__':
     argvs = sys.argv
     parser = OptionParser()
     parser.add_option("--dir", dest="dir", default="./")
+    parser.add_option("--file", dest="file", default="plot_prop_mat.txt")
     parser.add_option("--freq", dest="freq", default=100.0, type="float")
     parser.add_option("--pxyz", dest="pxyz",
                       default=[0.0, 0.0, 0.0], type="float", nargs=3)
     opt, argc = parser.parse_args(argvs)
     print(opt, argc)
 
-    pt = np.linspace(-1, 1, 100) * 90
-    data = np.loadtxt("plot_prop_mat.txt", comments="#")
+    datafile = opt.file
+    data = np.loadtxt(datafile, comments="#")
     wave = 500.0  # [nm]
     freq = convert_wave_to_freq(wave, "nm", "THz")
     knum = 2 * np.pi / wave
     print(freq)
     print(data)
     print(data.shape)
+    pt = np.linspace(-1, 1, 100) * 90
     n0 = data[0, 0]
     matGs = np.empty((2, 2), dtype=complex)
     matGp = np.empty((2, 2), dtype=complex)
     # for t in pt:
     t = 45.0
     for idx, dat in enumerate(data[1:]):
-        print(idx, *dat)
         i1, i2 = idx, idx + 1
         i, n1_real, n1_imag, d1 = data[i1]
         i, n2_real, n2_imag, d2 = data[i2]
@@ -58,3 +59,4 @@ if __name__ == '__main__':
         print(i2, n2, d2)
         print(rs, ts)
         print(rp, tp)
+        #t = np.rad2deg(np.abs(n1) / np.abs(n2) * np.arcsin(np.sin(np.deg2rad(t))))
