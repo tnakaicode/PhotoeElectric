@@ -63,9 +63,9 @@ d3 = 10             # 媒質 2(誘電体)の厚さ d2〔nm〕
 WL = 633            # 真空中の波長 WL〔nm〕
 k0 = 2 * np.pi / WL        # 真空中の波数
 
-t1start = 40        # 始めの角度
-t1end = 70          # 終わりの角度
-t1points = 300      # プロット数
+t1start = 25
+t1end = 90
+t1points = 300
 
 t1DegOut = np.linspace(t1start, t1end, t1points)
 t1 = 0.25 * np.pi + (1 / n1) * np.arcsin((t1DegOut - 45) / 180 * np.pi)
