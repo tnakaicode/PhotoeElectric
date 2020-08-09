@@ -61,3 +61,13 @@ $$ \Phi_{i} = \begin{vmatrix}
     \exp(ik_{iz}d_i) & 0 \\
     0 & \exp(-ik_{iz}d_i)
 \end{vmatrix} $$
+
+$$ M_{21}^{P} = \frac{1}{2n_{2}n_{1}k_{2z}} \begin{vmatrix}
+    n_2^2k_{2z} + n_1^2k_{2z} & n_2^2k_{1z} - n_1^2k_{2z} \\
+    n_2^2k_{2z} - n_1^2k_{2z} & n_2^2k_{1z} + n_1^2k_{2z}
+\end{vmatrix} $$
+
+$$ M_{21}^{S} = \frac{1}{2n_{2}n_{1}k_{1z}} \begin{vmatrix}
+    k_{2z} + k_{1z} & k_{2z} - k_{1z} \\
+    k_{2z} - k_{1z} & k_{2z} + k_{1z}
+\end{vmatrix} $$

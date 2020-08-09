@@ -13,11 +13,11 @@ def mMATs(n1=1.0, n2=1.0, t0=0.0, knum=1.0):
     k1z = knum * n1z
     k2z = knum * n2z
     mat = np.empty((2, 2))
-    mat[0, 0] = k1z + k2z
-    mat[0, 1] = k1z - k2z
-    mat[1, 0] = k1z - k2z
-    mat[1, 1] = k1z + k2z
-    return (1 / (2 * n1z)) * mat
+    mat[0, 0] = k2z + k1z
+    mat[0, 1] = k2z - k1z
+    mat[1, 0] = k2z - k1z
+    mat[1, 1] = k2z + k1z
+    return (1 / (2 * n1 * n2 * k1z)) * mat
 
 
 def mMATp(n1=1.0, n2=1.0, t0=0.0, knum=1.0):
@@ -32,11 +32,11 @@ def mMATp(n1=1.0, n2=1.0, t0=0.0, knum=1.0):
     k1z = knum * n1z
     k2z = knum * n2z
     mat = np.empty((2, 2))
-    mat[0, 0] = n1**2 * k2z + n2**2 * k1z
-    mat[0, 1] = n1**2 * k2z - n2**2 * k1z
-    mat[1, 0] = n1**2 * k2z - n2**2 * k1z
-    mat[1, 1] = n1**2 * k2z + n2**2 * k1z
-    return (1 / (2 * n1 * n2 * k1z)) * mat
+    mat[0, 0] = n2**2 * k1z + n1**2 * k2z
+    mat[0, 1] = n2**2 * k1z - n1**2 * k2z
+    mat[1, 0] = n2**2 * k1z - n1**2 * k2z
+    mat[1, 1] = n2**2 * k1z + n1**2 * k2z
+    return (1 / (2 * n1 * n2 * k2z)) * mat
 
 
 def matFAI(n1=1.0, d1=1.0, t0=0.0, knum=1.0):

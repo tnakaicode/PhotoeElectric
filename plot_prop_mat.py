@@ -43,7 +43,7 @@ if __name__ == '__main__':
     t = 45.0
     for idx, dat in enumerate(data[1:]):
         print(idx, *dat)
-        i1, i2 = idx - 1, idx
+        i1, i2 = idx, idx + 1
         n1, d1 = data[i1]
         n2, d2 = data[i2]
         mPhi = matFAI(n2, d2, t, knum)
@@ -53,6 +53,5 @@ if __name__ == '__main__':
         rp = -1 * matGp[0, 1] / matGp[1, 1]
         ts = matGs[0, 0] - matGs[0, 1] * matGs[1, 0] / matGs[1, 1]
         tp = matGp[0, 0] - matGp[0, 1] * matGp[1, 0] / matGp[1, 1]
-        print(i2, n2, d2)
         print(rs, ts)
         print(rp, tp)
