@@ -34,3 +34,30 @@ s-polとp-polでは、s-polが常に煩瑣率が高い。
 
 侵入長
 $$ z_d = \frac{\lambda}{2\pi\sqrt{n_1^2\sin^2(\theta_1) - n_2^2}} $$
+
+薄膜の多重反射と透過
+
+3層のは媒質(2層目の媒質の厚みを$d_2$とする)
+
+$$ r_{13} = \frac{r_{12} + r_{23} \exp(2k_{2z}d_2i)}{1 + r_{23}r_{12}\exp(2k_{2z}d_2i)} $$
+$$ t_{13} = \frac{t_{12}t_{23}\exp(2k_{2z}d_2i)}{1 + r_{23}r_{12}\exp(2k_{2z}d_2i)} $$
+$$ k_{2z} = \frac{2\pi}{\lambda} n_2 \cos(\theta_2) $$
+
+## Propagation matrix of isotropic medium
+
+$$ G = M_{f(f-1)} \Phi_{f-1} ... M_{32} \Phi_2 M_{21} $$
+
+$$ M_{ij}^{P} = \frac{1}{2n_{i}n_{j}k_{iz}} \begin{vmatrix}
+    n_i^2k_{iz} + n_j^2k_{iz} & n_i^2k_{jz} - n_j^2k_{iz} \\
+    n_i^2k_{iz} - n_j^2k_{iz} & n_i^2k_{jz} + n_j^2k_{iz}
+\end{vmatrix} $$
+
+$$ M_{ij}^{S} = \frac{1}{2n_{i}n_{j}k_{iz}} \begin{vmatrix}
+    k_{iz} + k_{jz} & k_{iz} - k_{jz} \\
+    k_{iz} - k_{jz} & k_{iz} + k_{jz}
+\end{vmatrix} $$
+
+$$ \Phi_{i} = \begin{vmatrix}
+    \exp(ik_{iz}d_i) & 0 \\
+    0 & \exp(-ik_{iz}d_i)
+\end{vmatrix} $$

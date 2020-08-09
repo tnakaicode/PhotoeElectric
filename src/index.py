@@ -1,6 +1,42 @@
 import numpy as np
 
 
+def mMATs(n1z, n2z):
+    """
+    S-Pol M-Matrix Boundary Condition
+    """
+    mat = np.empty((2, 2))
+    mat[0, 0] = n1z + n2z
+    mat[0, 1] = n1z - n2z
+    mat[1, 0] = n1z - n2z
+    mat[1, 1] = n1z + n2z
+    return (1 / (2 * n1z)) * mat
+
+
+def mMATp(n1z, n2z, n1, n2):
+    """
+    P-Pol M-Matrix Boundary Condition
+    """
+    mat = np.empty((2, 2))
+    mat[0, 0] = n1**2 * n2z + n2**2 * n1z
+    mat[0, 1] = n1**2 * n2z - n2**2 * n1z
+    mat[1, 0] = n1**2 * n2z - n2**2 * n1z
+    mat[1, 1] = n1**2 * n2z + n2**2 * n1z
+    return (1 / (2 * n1 * n2 * n1z)) * mat
+
+
+def matFAI(n1z, d1, k0):
+    """
+    Phi-Matrix Phase Trasition
+    """
+    mat = np.empty((2, 2))
+    mat[0, 0] = np.exp(1j * n1z * k0 * d1)
+    mat[0, 1] = 0
+    mat[1, 0] = 0
+    mat[1, 1] = np.exp(-1j * n1z * k0 * d1)
+    return mat
+
+
 def brewster_angle(n1=1.0, n2=1.0):
     return np.arctan(n2 / n1)
 
