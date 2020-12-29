@@ -27,8 +27,9 @@ def truncate_colormap(cmap, minval=0.0, maxval=1.0, n=100):
     return new_cmap
 
 
-def ithPart(gammai, dp, dpgi, sigmagi): return (gammai / (np.sqrt(2 * np.pi) * np.log(sigmagi)
-                                                          * dp)) * np.exp(-(np.log(dp) - np.log(dpgi))**2 / (2 * np.log(sigmagi)**2))
+def ithPart(gammai, dp, dpgi, sigmagi):
+    return (gammai / (np.sqrt(2 * np.pi) * np.log(sigmagi)
+                      * dp)) * np.exp(-(np.log(dp) - np.log(dpgi))**2 / (2 * np.log(sigmagi)**2))
 
 
 if __name__ == '__main__':
@@ -39,7 +40,6 @@ if __name__ == '__main__':
                       default=[0.0, 0.0, 0.0], type="float", nargs=3)
     opt, argc = parser.parse_args(argvs)
     print(opt, argc)
-
 
     N = 1e6
     w = 405

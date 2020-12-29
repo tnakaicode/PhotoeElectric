@@ -50,15 +50,13 @@ if __name__ == '__main__':
                r"$\mathregular{\frac{3\pi}{4}}$", r"$\mathregular{\pi}$"]
     x_tick = [0, np.pi / 4, np.pi / 2, 3 * np.pi / 4, np.pi]
     obj.axs.set_xticks(x_tick)
-    obj.axs.set_xticklabels(x_label, fontsize=14)
+    obj.axs.set_xticklabels(x_label)
     obj.axs.tick_params(which='both', direction='in')
-    obj.axs.set_xlabel("Scattering Angle ϴ", fontsize=16)
-    obj.axs.set_ylabel(
-        r"Intensity ($\mathregular{|S|^2}$)", fontsize=16, labelpad=10)
+    obj.axs.set_xlabel("Scattering Angle ϴ")
+    obj.axs.set_ylabel(r"Intensity ($\mathregular{|S|^2}$)", labelpad=10)
     handles, labels = obj.axs.get_legend_handles_labels()
-    obj.fig.legend(handles, labels, fontsize=14, ncol=3, loc=8)
-
-    obj.fig.suptitle("Scattering Intensity Functions", fontsize=18)
+    obj.fig.legend(handles, labels, ncol=3, loc=8)
+    obj.fig.suptitle("Scattering Intensity Functions")
 
     # Highlight certain angles and compute integral
     sixty = [0.96 < x < 1.13 for x in S[0]]

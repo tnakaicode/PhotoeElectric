@@ -7,7 +7,7 @@ import os
 from preprocess import Preprocess
 
 
-class Fdtd(Preprocess):
+class FDTD(Preprocess):
 
     def sweep(self):
         """ Time development with CFS-PML and ADE """
@@ -58,60 +58,34 @@ class Fdtd(Preprocess):
         tau = math.pi / self.omega0
 
         if self.pulse == 'pulse':
-
             t0 = 5.0 * tau
-
-        else:
-
-            t0 = 0.0
-
-            omega_env = self.omega0 * env_factor
-
-        tempe = (jt - 1) * self.dt - t0
-
-        if self.pulse == 'pulse':
-
+            tempe = (jt - 1) * self.dt - t0
             campe = math.sin(self.omega0 * tempe)
-
             j00 = math.exp(-tempe * tempe / tau / tau) * campe
-
         else:
-
+            t0 = 0.0
+            omega_env = self.omega0 * env_factor
+            tempe = (jt - 1) * self.dt - t0
             tempe2 = tempe - math.pi / omega_env
-
             campe = math.cos(self.omega0 * tempe2)
-
             if tempe2 < -math.pi / omega_env:
-
                 j00 = 0
-
             elif tempe2 < 0:
-
                 j00 = 0.5 * (1 + math.cos(omega_env * tempe2)) * campe
-
             else:
-
                 j00 = campe
 
         for dipole in self.idipoles:
-
             if dipole.pol == 'x':
-
                 self.Ex2[dipole.iz, dipole.iy, dipole.ix] = self.Ex2[dipole.iz,
                                                                      dipole.iy, dipole.ix] - dipole.phase * j00
-
             elif dipole.pol == 'y':
-
                 self.Ey2[dipole.iz, dipole.iy, dipole.ix] = self.Ey2[dipole.iz,
                                                                      dipole.iy, dipole.ix] - dipole.phase * j00
-
             elif dipole.pol == 'z':
-
                 self.Ez2[dipole.iz, dipole.iy, dipole.ix] = self.Ez2[dipole.iz,
                                                                      dipole.iy, dipole.ix] - dipole.phase * j00
-
             else:
-
                 print('Error at dipole_source!')
 
         self.esource[jt] = j00
@@ -134,56 +108,47 @@ class Fdtd(Preprocess):
         tau = math.pi / self.omega0
 
         if self.pulse == 'pulse':
-
             t0 = 5.0 * tau
+            tempe = (jt + 0.5) * self.dt - t0 \
+                - (self.izst - iz00) * self.dz * \
+                math.sqrt(self.epsr[self.bgmater]) / self.cc
 
-        else:
+            temph = jt * self.dt - t0 - (self.izst - iz00 - 0.5) \
+                * self.dz * math.sqrt(self.epsr[self.bgmater]) / self.cc
 
-            t0 = 0.0
-
-            omega_env = self.omega0 * env_factor
-
-        tempe = (jt + 0.5) * self.dt - t0 \
-            - (self.izst - iz00) * self.dz * \
-            math.sqrt(self.epsr[self.bgmater]) / self.cc
-
-        temph = jt * self.dt - t0 - (self.izst - iz00 - 0.5) \
-            * self.dz * math.sqrt(self.epsr[self.bgmater]) / self.cc
-
-        campe = math.sin(self.omega0 * tempe)
-
-        camph = math.sin(self.omega0 * temph)
-
-        if self.pulse == 'pulse':
+            campe = math.sin(self.omega0 * tempe)
+            camph = math.sin(self.omega0 * temph)
 
             SEx00 = math.exp(-tempe * tempe / tau / tau) * campe
-
             SHy00 = math.exp(-temph * temph / tau / tau) * camph \
                 / (self.zz0 / math.sqrt(self.epsr[self.bgmater]))
+
         else:
+            t0 = 0.0
+            omega_env = self.omega0 * env_factor
+
+            tempe = (jt + 0.5) * self.dt - t0 \
+                - (self.izst - iz00) * self.dz * \
+                math.sqrt(self.epsr[self.bgmater]) / self.cc
+
+            temph = jt * self.dt - t0 - (self.izst - iz00 - 0.5) \
+                * self.dz * math.sqrt(self.epsr[self.bgmater]) / self.cc
+
+            campe = math.sin(self.omega0 * tempe)
+            camph = math.sin(self.omega0 * temph)
 
             if tempe < 0.0:
-
                 SEx00 = 0.0
-
             elif tempe < math.pi / omega_env:
-
                 SEx00 = 0.5 * (1.0 - math.cos(omega_env * tempe)) * campe
-
             else:
-
                 SEx00 = campe
-
             if temph < 0.0:
-
                 SHy00 = 0.0
-
             elif temph < math.pi / omega_env:
-
                 SHy00 = 0.5 * (1.0 - math.cos(omega_env * temph)) * camph \
                     / (self.zz0 / math.sqrt(self.epsr[self.bgmater]))
             else:
-
                 SHy00 = camph / (self.zz0 / math.sqrt(self.epsr[self.bgmater]))
 
         # store source E field
@@ -1246,94 +1211,87 @@ class Fdtd(Preprocess):
             if ifieldmon.axis == 'x':
 
                 if ehfield == 'Ex':
-
                     field2d = self.Ex2[0:self.mzz +
                                        1, 0:self.myy + 1, location]
-
                 elif ehfield == 'Ey':
-
                     field2d = self.Ey2[0:self.mzz + 1, 0:self.myy, location]
 
                 elif ehfield == 'Ez':
-
                     field2d = self.Ez2[0:self.mzz, 0:self.myy + 1, location]
 
                 elif ehfield == 'Hx':
-
                     field2d = self.Hx2[0:self.mzz, 0:self.myy, location]
 
                 elif ehfield == 'Hy':
-
                     field2d = self.Hy2[0:self.mzz, 0:self.myy + 1, location]
 
                 elif ehfield == 'Hz':
+                    field2d = self.Hz2[0:self.mzz + 1, 0:self.myy, location]
 
+                else:
+                    # Hz
                     field2d = self.Hz2[0:self.mzz + 1, 0:self.myy, location]
 
             # normal to y-axis
-
             elif ifieldmon.axis == 'y':
 
                 if ehfield == 'Ex':
-
                     field2d = self.Ex2[0:self.mzz + 1, location, 0:self.mxx]
 
                 elif ehfield == 'Ey':
-
                     field2d = self.Ey2[0:self.mzz +
                                        1, location, 0:self.mxx + 1]
 
                 elif ehfield == 'Ez':
-
                     field2d = self.Ez2[0:self.mzz, location, 0:self.mxx + 1]
 
                 elif ehfield == 'Hx':
-
                     field2d = self.Hx2[0:self.mzz, location, 0:self.mxx + 1]
 
                 elif ehfield == 'Hy':
-
                     field2d = self.Hy2[0:self.mzz, location, 0:self.mxx]
 
                 elif ehfield == 'Hz':
+                    field2d = self.Hz1[0:self.mzz + 1, location, 0:self.mxx]
 
+                else:
+                    # Hz
                     field2d = self.Hz1[0:self.mzz + 1, location, 0:self.mxx]
 
             # normal to z-axis
-
             elif ifieldmon.axis == 'z':
 
                 if ehfield == 'Ex':
-
                     field2d = self.Ex2[location, 0:self.myy + 1, 0:self.mxx]
 
                 elif ehfield == 'Ey':
-
                     field2d = self.Ey2[location, 0:self.myy, 0:self.mxx + 1]
 
                 elif ehfield == 'Ez':
-
                     field2d = self.Ez2[location,
                                        0:self.myy + 1, 0:self.mxx + 1]
 
                 elif ehfield == 'Hx':
-
                     field2d = self.Hx2[location, 0:self.myy, 0:self.mxx + 1]
 
                 elif ehfield == 'Hy':
-
                     field2d = self.Hy2[location, 0:self.myy + 1, 0:self.mxx]
 
                 elif ehfield == 'Hz':
-
                     field2d = self.Hz2[location, 0:self.myy, 0:self.mxx]
 
-            if not os.path.exists('./field'):
+                else:
+                    # Hz
+                    field2d = self.Hz2[location, 0:self.myy, 0:self.mxx]
 
+            else:
+                # Hz - z-axis
+                field2d = self.Hz2[location, 0:self.myy, 0:self.mxx]
+
+            if not os.path.exists('./field'):
                 os.mkdir('./field')
 
             fname = ifieldmon.prefix + '{0:0>3}'.format(numt) + '.txt'
-
             np.savetxt(fname, field2d, fmt='%e', delimiter=' ')
 
     def detect_efield(self, jt):
