@@ -5,7 +5,7 @@ import matplotlib as mpl
 import scipy.constants as cnt
 
 from src.base import pol_plot
-from material import mat_refract
+from src.material import mat_refract
 
 freq = 170.0 * 10**(3 * 3)  # Hz
 wave = cnt.c / freq  # m
