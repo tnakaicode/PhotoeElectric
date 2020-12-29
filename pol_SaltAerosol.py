@@ -10,7 +10,7 @@ from scipy.integrate import trapz
 from optparse import OptionParser
 
 sys.path.append(os.path.join("./"))
-from base import plot2d
+from src.base import plot2d
 
 import logging
 logging.getLogger('matplotlib').setLevel(logging.ERROR)

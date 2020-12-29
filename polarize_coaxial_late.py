@@ -5,22 +5,27 @@ import time
 import os
 from scipy.special import spherical_jn, spherical_yn
 
-import RI
+from src.base import plot2d
+from src.RI import WLx, RIAu, NumWLx
 
 
-def psi(n, z):                     # Riccati-Bessel function of first kind
+def psi(n, z):
+    # Riccati-Bessel function of first kind
     return z * spherical_jn(n, z)
 
 
-def psiDz(n, z):                   # Derivative of Riccati-Bessel function of first kind
+def psiDz(n, z):
+    # Derivative of Riccati-Bessel function of first kind
     return spherical_jn(n, z) + z * spherical_jn(n, z, 1)
 
 
-def xi(n, z):                      # Riccati-Bessel function of third kind
+def xi(n, z):
+    # Riccati-Bessel function of third kind
     return z * (spherical_jn(n, z) + 1j * spherical_yn(n, z))
 
 
-def xiDz(n, z):                    # Derivative of Riccati-Bessel function of third kind
+def xiDz(n, z):
+    # Derivative of Riccati-Bessel function of third kind
     return (spherical_jn(n, z) + 1j * spherical_yn(n, z)) \
         + z * (spherical_jn(n, z, 1) + 1j * spherical_yn(n, z, 1))
 
@@ -62,9 +67,9 @@ s = 1.1      # シェルの半径/コアの半径
 r2 = r3 * s    # シェルの半径
 qq = 20      # ベッセル関数の次数
 
-k0 = 2 * np.pi / RI.WLx       # 真空中の波数
+k0 = 2 * np.pi / WLx       # 真空中の波数
 n1 = 1              # 周辺媒質の屈折率
-n2 = RI.RIAu           # 微粒子コアの屈折率
+n2 = RIAu           # 微粒子コアの屈折率
 n3 = 1.5            # シェルの屈折率
 
 x = k0 * n1 * r3  # サイズ パラメータ(コア)
@@ -73,9 +78,9 @@ y = k0 * n1 * r2    # サイズ パラメータ(シェル
 m2 = n2 / n1        # 比屈折率(シェル)
 m3 = n3 / n1        # 比屈折率(コア)
 
-Csca = np.zeros(RI.NumWLx, dtype=complex)
-Cext = np.zeros(RI.NumWLx, dtype=complex)
-Cabs = np.zeros(RI.NumWLx, dtype=complex)
+Csca = np.zeros(NumWLx, dtype=complex)
+Cext = np.zeros(NumWLx, dtype=complex)
+Cabs = np.zeros(NumWLx, dtype=complex)
 
 for n in range(qq):
     Csca = Csca + (2 * np.pi / k0**2) * \
@@ -88,15 +93,13 @@ for n in range(qq):
 Qsca = Csca / ((r2**2) * np.pi)    # 散乱効率
 Qabs = Cabs / ((r2**2) * np.pi)    # 吸収効率
 
-plt.plot(RI.WLx, abs(Qsca),
-         label=r"$Q_{\rm sca}$", linewidth=3.0, color='black')
-plt.plot(RI.WLx, abs(Qabs),
-         label=r"$Q_{\rm abs}$", linewidth=3.0, color='gray')
-plt.xlabel("wave (nm)", fontsize=22)
-plt.ylabel("scat / absorb rate", fontsize=22)
-plt.title("scat / absorb rate", fontsize=22)
-plt.grid(True)
-plt.axis([400, 1000, 0, 10])
-plt.legend(fontsize=20, loc='upper left')
-plt.tick_params(labelsize=18)
-plt.show()
+obj = plot2d(aspect="auto")
+obj.axs.plot(WLx, abs(Qsca), label=r"$Q_{\rm sca}$", color='black')
+obj.axs.plot(WLx, abs(Qabs), label=r"$Q_{\rm abs}$", color='gray')
+obj.axs.set_xlabel("wave (nm)")
+obj.axs.set_ylabel("scat / absorb rate")
+obj.axs.set_title("scat / absorb rate")
+obj.axs.axis([400, 1000, 0, 10])
+obj.axs.legend(loc='upper left')
+obj.axs.tick_params()
+obj.SavePng()
