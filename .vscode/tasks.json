@@ -4,40 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "gfortran debug",
-            "type": "shell",
-            "options": {
-                "shell": {
-                    "executable": "${env:windir}\\sysnative\\cmd.exe",
-                    "args": [
-                        "/c"
-                    ]
-                }
-            },
-            "command": "gfortran",
-            "args": [
-                "-g",
-                "-O0",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
-                "${fileDirname}\\${fileBasename}"
-            ],
-            "group": {
-                "kind": "test",
-                "isDefault": true
-            },
-            "presentation": {
-                "echo": true,
-                "reveal": "always",
-                "focus": true,
-                "panel": "shared",
-                "showReuseMessage": true,
-                "clear": true
-            },
-            "problemMatcher": []
-        },
-        {
-            "label": "gcc debug",
+            "label": "mpirun",
             "type": "shell",
             "options": {
                 "shell": {
@@ -47,13 +14,12 @@
                     ]
                 },
             },
-            "command": "gcc",
+            "command": "mpiexec",
             "args": [
-                "-g",
-                "-O0",
-                "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe",
-                "${fileDirname}\\${fileBasename}"
+                "-np",
+                "4",
+                "python",
+                "${fileDirname}\\${fileBasenameNoExtension}.py",
             ],
             "group": {
                 "kind": "test",
@@ -69,21 +35,5 @@
             },
             "problemMatcher": []
         },
-		{
-			"label": "x64 VC",
-			"type": "shell",
-            "options": {
-                "shell": {
-                    "executable": "${env:windir}\\sysnative\\cmd.exe",
-                    "args": [
-                        "vcvarsall.bat",
-                        "x64"
-                    ],
-                },
-                "cwd": "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\VC\\Auxiliary\\Build"
-            },
-			"command": "echo OFF",
-			"group": "build"
-		},
     ]
 }

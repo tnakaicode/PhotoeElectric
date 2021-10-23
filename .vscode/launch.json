@@ -40,6 +40,23 @@
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false
+        },
+        {
+            "name": "mpicc - Build and debug active file",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "args": [
+                "-np",
+                "1",
+                "${fileDirname}/${fileBasenameNoExtension}"
+            ],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment":[{ "name": "TMPDIR", "value": "/tmp" }],
+            "externalConsole": false,
+            "MIMode": "lldb",
+            "preLaunchTask": "mpicc build active file"
         }
     ]
 }
