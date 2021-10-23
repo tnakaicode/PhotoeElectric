@@ -4,7 +4,7 @@ import sys
 import time
 import os
 
-import RI
+from src import RI
 
 n1 = 1       # 周辺媒質の屈折率
 n2 = RI.RIAg    # 粒子の屈折率

@@ -336,7 +336,7 @@ class Preprocess():
                         self.idy[iz, iy, ix] = materialid
 
         for iz in range(izmin, izmax):
-            self.isdz[iz] = material
+            self.isdz[iz] = obj.material
             if iz >= 0 and iz <= self.mzz:
                 if iy in range(0, self.myy + 1):
                     if ix in range(0, self.mxx + 1):

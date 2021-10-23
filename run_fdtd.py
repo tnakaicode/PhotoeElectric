@@ -9,42 +9,30 @@ from fdtd import FDTD
 if __name__ == "__main__":
 
     regionx = 200.0e-9  # object region
-
     regiony = 200.0e-9  # object region
-
     regionz = 200.0e-9  # object region
 
     dxtarget = 2.5e-9  # dx [m]
-
     dytarget = 2.5e-9  # dy [m]
-
     dztarget = 2.5e-9  # dz [m]
 
-    source = 'plane'  # 'dipole' or 'plane' wave source
+    # 'dipole' or 'plane' wave source
+    source = 'plane'
 
-    pulse = 'cw'  # 'pulse' or 'cw' source
+    # 'pulse' or 'cw' source
+    pulse = 'cw'
 
     lambda0 = 0.561e-3  # center wavelength in vacuum [m]
-
-    courantfac = 0.98  # Courant factor
-
-    mt = 2**7  # number of iterations, must be integer power of 2
-
-    mfft = 2**5  # number of sampling for FFT, must be integer power of 2
-
-    extrapol = 4  # zero-filling factor before FFT
-
-    msf = 3  # width for scattering field region (>=3)
-
-    mpml = 8  # number of perfectly matched layers
-
-    kappamax = 100.0  # parameter for CFS-CPML
-
-    amax = 10.0  # parameter for CFS-CPML
-
-    mpow = 3  # parameter for CFS-CPML
-
-    r1 = 25.0e-9  # radius of inner sphere
+    courantfac = 0.98   # Courant factor
+    mt = 2**7           # number of iterations, must be integer power of 2
+    mfft = 2**5         # number of sampling for FFT, must be integer power of 2
+    extrapol = 4        # zero-filling factor before FFT
+    msf = 3             # width for scattering field region (>=3)
+    mpml = 8            # number of perfectly matched layers
+    kappamax = 100.0    # parameter for CFS-CPML
+    amax = 10.0         # parameter for CFS-CPML
+    mpow = 3            # parameter for CFS-CPML
+    r1 = 25.0e-9        # radius of inner sphere
 
     Obj = namedtuple('Obj', ('shape', 'material', 'position', 'size'))
 
