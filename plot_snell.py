@@ -7,7 +7,7 @@ import time
 from scipy.integrate import odeint
 
 sys.path.append(os.path.join('./'))
-from base import plot2d
+from src.base import plot2d
 
 
 def refract_1d(x=0, cff=2, rng=0.8):

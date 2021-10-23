@@ -1,7 +1,7 @@
 # Note
 
 ```bash
-conda install -c conda pythonocc-core
+conda install -c conda-forge pythonocc-core
 pip install PyMieScatt
 pip install numdifftools
 ```
