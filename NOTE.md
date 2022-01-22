@@ -1,9 +1,9 @@
 # Note
 
 ```bash
-conda install -c conda-forge pythonocc-core
 pip install PyMieScatt
 pip install numdifftools
+pip install imageio-ffmpeg
 ```
 
 <https://pymiescatt.readthedocs.io/en/latest/examples.html>

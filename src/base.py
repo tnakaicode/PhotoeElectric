@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.tri as tri
+import scipy as sp
 import sys
 import pickle
 import json
@@ -10,7 +11,10 @@ import glob
 import shutil
 import datetime
 import platform
-from scipy.spatial import ConvexHull
+import subprocess
+from scipy import ndimage
+from scipy.spatial import ConvexHull, Delaunay
+from scipy.optimize import minimize, minimize_scalar, OptimizeResult
 from optparse import OptionParser
 from matplotlib import animation
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -20,41 +24,32 @@ import logging
 logging.getLogger('matplotlib').setLevel(logging.ERROR)
 logging.getLogger('parso').setLevel(logging.ERROR)
 
-from OCC.Display.SimpleGui import init_display
-from OCC.Core.gp import gp_Pnt, gp_Vec, gp_Dir
-from OCC.Core.gp import gp_Ax1, gp_Ax2, gp_Ax3
-from OCC.Core.gp import gp_XYZ
-from OCC.Core.gp import gp_Lin, gp_Elips
-from OCC.Core.gp import gp_Mat, gp_GTrsf, gp_Trsf
-from OCC.Core.TopoDS import TopoDS_Shape, TopoDS_Compound
-from OCC.Core.TopLoc import TopLoc_Location
-from OCC.Core.TColgp import TColgp_Array1OfPnt, TColgp_Array2OfPnt
-from OCC.Core.TColgp import TColgp_HArray1OfPnt, TColgp_HArray2OfPnt
-from OCC.Core.BRep import BRep_Builder
-from OCC.Core.BRepFill import BRepFill_Filling
-from OCC.Core.BRepFill import BRepFill_CurveConstraint
-from OCC.Core.BRepOffset import BRepOffset_MakeOffset, BRepOffset_Skin, BRepOffset_Interval
-from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeWire
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeFace
-from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_GTransform
-from OCC.Core.GeomAPI import geomapi
-from OCC.Core.GeomAPI import GeomAPI_PointsToBSplineSurface
-from OCC.Core.GeomAPI import GeomAPI_PointsToBSpline
-from OCC.Core.GeomAPI import GeomAPI_Interpolate
-from OCC.Core.GeomAbs import GeomAbs_C0, GeomAbs_C1, GeomAbs_C2
-from OCC.Core.GeomAbs import GeomAbs_G1, GeomAbs_G2
-from OCC.Core.GeomAbs import GeomAbs_Intersection, GeomAbs_Arc
-from OCC.Core.GeomFill import GeomFill_BoundWithSurf
-from OCC.Core.GeomFill import GeomFill_BSplineCurves
-from OCC.Core.GeomFill import GeomFill_StretchStyle, GeomFill_CoonsStyle, GeomFill_CurvedStyle
-from OCC.Core.AIS import AIS_Manipulator
-from OCC.Extend.DataExchange import write_step_file, read_step_file
-from OCCUtils.Topology import Topo
-from OCCUtils.Construct import make_box, make_line, make_wire, make_edge
-from OCCUtils.Construct import make_plane, make_polygon
-from OCCUtils.Construct import point_to_vector, vector_to_point
-from OCCUtils.Construct import dir_to_vec, vec_to_dir
+
+def which(program):
+    """Run the Unix which command in Python."""
+    import os
+
+    def is_exe(fpath):
+        """Check if file is executable."""
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, _ = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
+
+
+def sys_flush(n):
+    sys.stdout.write("\r " + " / ".join(map(str, n)))
+    sys.stdout.flush()
 
 
 def split_filename(filename="./temp_20200408000/not_ignore.txt"):
@@ -63,41 +58,17 @@ def split_filename(filename="./temp_20200408000/not_ignore.txt"):
     return name, rootname
 
 
-def pnt_to_xyz(p):
-    return p.X(), p.Y(), p.Z()
-
-
-def float_to_string(number):
-    if number == 0 or abs(np.log10(abs(number))) < 100:
-        return ' {: 0.10E}'.format(number)
-    else:
-        return ' {: 0.10E}'.format(number).replace('E', '')
-
-
-def occ_to_grasp_cor(axs, name="name", filename="pln.cor"):
-    pnt = axs.Location()
-    v_x = axs.XDirection()
-    v_y = axs.YDirection()
-    fp = open(filename, "w")
-    fp.write(' {:s}\n'.format(name))
-    fp.write(' {:s}\n'.format("mm"))
-    fp.write(''.join([float_to_string(v) for v in pnt_to_xyz(pnt)]) + '\n')
-    fp.write(''.join([float_to_string(v) for v in pnt_to_xyz(v_x)]) + '\n')
-    fp.write(''.join([float_to_string(v) for v in pnt_to_xyz(v_y)]) + '\n')
-    fp.close()
-
-
-def create_tempdir(name="temp", flag=1):
-    print(datetime.date.today())
+def create_tempdir(name="temp", flag=1, d="./"):
+    print(datetime.date.today(), time.ctime())
     datenm = "{0:%Y%m%d}".format(datetime.date.today())
-    dirnum = len(glob.glob("./{}_{}*/".format(name, datenm)))
+    dirnum = len(glob.glob(d + "{}_{}*/".format(name, datenm)))
     if flag == -1 or dirnum == 0:
-        tmpdir = "./{}_{}{:03}/".format(name, datenm, dirnum)
+        tmpdir = d + "{}_{}{:03}/".format(name, datenm, dirnum)
         os.makedirs(tmpdir)
         fp = open(tmpdir + "not_ignore.txt", "w")
         fp.close()
     else:
-        tmpdir = "./{}_{}{:03}/".format(name, datenm, dirnum - 1)
+        tmpdir = d + "{}_{}{:03}/".format(name, datenm, dirnum - 1)
     return tmpdir
 
 
@@ -105,6 +76,14 @@ def create_tempnum(name, tmpdir="./", ext=".tar.gz"):
     num = len(glob.glob(tmpdir + name + "*" + ext)) + 1
     filename = '{}{}_{:03}{}'.format(tmpdir, name, num, ext)
     #print(num, filename)
+    return filename
+
+
+def create_tempdate(name, tmpdir="./", ext=".tar.gz"):
+    print(datetime.date.today())
+    datenm = "{0:%Y%m%d}".format(datetime.date.today())
+    num = len(glob.glob(tmpdir + name + "_{}*".format(datenm) + ext)) + 1
+    filename = '{}{}_{}{:03}{}'.format(tmpdir, name, datenm, num, ext)
     return filename
 
 
@@ -148,23 +127,55 @@ def pol_plot_ref(tdeg, Rp, Rs):
 
 class SetDir (object):
 
-    def __init__(self):
+    def __init__(self, temp=True):
         self.root_dir = os.getcwd()
         self.tempname = ""
         self.rootname = ""
-        self.create_tempdir()
 
         pyfile = sys.argv[0]
         self.filename = os.path.basename(pyfile)
         self.rootname, ext_name = os.path.splitext(self.filename)
-        self.tempname = self.tmpdir + self.rootname
-        print(self.rootname)
+
+        if temp == True:
+            self.create_tempdir()
+            self.tempname = self.tmpdir + self.rootname
+            print(self.rootname)
+        else:
+            print(self.tmpdir)
 
     def init(self):
         self.tempname = self.tmpdir + self.rootname
 
-    def create_tempdir(self, name="temp", flag=1):
-        self.tmpdir = create_tempdir(name, flag)
+    def create_tempdir(self, name="temp", flag=1, d="./"):
+        self.tmpdir = create_tempdir(name, flag, d)
+        self.tempname = self.tmpdir + self.rootname
+        print(self.tmpdir)
+
+    def create_dir(self, name="temp"):
+        os.makedirs(name, exist_ok=True)
+        if os.path.isdir(name):
+            os.makedirs(name, exist_ok=True)
+            fp = open(name + "not_ignore.txt", "w")
+            fp.close()
+            print("make {}".format(name))
+        else:
+            print("already exist {}".format(name))
+        return name
+
+    def create_dirnum(self, name="./temp", flag=+1):
+        dirnum = len(glob.glob("{}_*/".format(name))) + flag
+        if dirnum < 0:
+            dirnum = 0
+        dirname = name + "_{:03}/".format(dirnum)
+        os.makedirs(dirname, exist_ok=True)
+        fp = open(dirname + "not_ignore.txt", "w")
+        fp.close()
+        print("make {}".format(dirname))
+        return dirname
+
+    def add_tempdir(self, dirname="./", name="temp", flag=1):
+        self.tmpdir = dirname
+        self.tmpdir = create_tempdir(self.tmpdir + name, flag)
         self.tempname = self.tmpdir + self.rootname
         print(self.tmpdir)
 
@@ -181,11 +192,43 @@ class SetDir (object):
             print("already exist {}".format(tmpdir))
         return tmpdir
 
+    def add_dir_num(self, name="temp", flag=-1):
+        if flag == -1:
+            num = len(glob.glob("{}/{}_*".format(self.tmpdir, name))) + 1
+        else:
+            num = len(glob.glob("{}/{}_*".format(self.tmpdir, name)))
+        tmpdir = "{}/{}_{:03}/".format(self.tmpdir, name, num)
+        os.makedirs(tmpdir, exist_ok=True)
+        fp = open(tmpdir + "not_ignore.txt", "w")
+        fp.close()
+        print("make {}".format(tmpdir))
+        return tmpdir
+
+    def open_filemanager(self, path="."):
+        abspath = os.path.abspath(path)
+        if sys.platform == "win32":
+            subprocess.run('explorer.exe {}'.format(abspath))
+        elif sys.platform == "linux":
+            subprocess.check_call(['xdg-open', abspath])
+        else:
+            subprocess.run('explorer.exe {}'.format(abspath))
+
+    def open_tempdir(self):
+        self.open_filemanager(self.tmpdir)
+
+    def open_newtempdir(self):
+        self.create_tempdir("temp", -1)
+        self.open_tempdir()
+
+    def exit_app(self):
+        sys.exit()
+
 
 class PlotBase(SetDir):
 
-    def __init__(self, aspect="equal"):
-        SetDir.__init__(self)
+    def __init__(self, aspect="equal", temp=True):
+        if temp == True:
+            SetDir.__init__(self, temp)
         self.dim = 2
         self.fig, self.axs = plt.subplots()
 
@@ -204,7 +247,6 @@ class PlotBase(SetDir):
         self.axs.set_aspect(aspect)
         self.axs.xaxis.grid()
         self.axs.yaxis.grid()
-        return self.fig, self.axs
 
     def new_3Dfig(self, aspect="equal"):
         self.fig = plt.figure()
@@ -219,11 +261,10 @@ class PlotBase(SetDir):
         self.axs.xaxis.grid()
         self.axs.yaxis.grid()
         self.axs.zaxis.grid()
-        return self.fig, self.axs
 
     def SavePng(self, pngname=None):
         if pngname == None:
-            pngname = self.tempname + ".png"
+            pngname = self.tmpdir + self.rootname + ".png"
         self.fig.savefig(pngname)
 
     def SavePng_Serial(self, pngname=None):
@@ -231,7 +272,10 @@ class PlotBase(SetDir):
             pngname = self.rootname
             dirname = self.tmpdir
         else:
-            dirname = os.path.dirname(pngname) + "/"
+            if os.path.dirname(pngname) == "":
+                dirname = "./"
+            else:
+                dirname = os.path.dirname(pngname) + "/"
             basename = os.path.basename(pngname)
             pngname, extname = os.path.splitext(basename)
         pngname = create_tempnum(pngname, dirname, ".png")
@@ -243,11 +287,21 @@ class PlotBase(SetDir):
         except AttributeError:
             pass
 
+    def plot_close(self):
+        plt.close("all")
+
+
+def make_patch_spines_invisible(ax):
+    ax.set_frame_on(True)
+    ax.patch.set_visible(False)
+    for sp in ax.spines.values():
+        sp.set_visible(False)
+
 
 class plot2d (PlotBase):
 
-    def __init__(self, aspect="equal"):
-        PlotBase.__init__(self)
+    def __init__(self, aspect="equal", temp=True, *args, **kwargs):
+        PlotBase.__init__(self, aspect, temp, *args, **kwargs)
         self.dim = 2
         # self.new_2Dfig(aspect=aspect)
         self.new_fig(aspect=aspect)
@@ -259,6 +313,17 @@ class plot2d (PlotBase):
         axs.xaxis.grid()
         axs.yaxis.grid()
         return axs
+
+    def add_twin(self, aspect="auto", side="right", out=0):
+        axt = self.axs.twinx()
+        # axt.axis("off")
+        axt.set_aspect(aspect)
+        axt.xaxis.grid()
+        axt.yaxis.grid()
+        axt.spines[side].set_position(('axes', out))
+        make_patch_spines_invisible(axt)
+        axt.spines[side].set_visible(True)
+        return axt
 
     def div_axs(self):
         self.div = make_axes_locatable(self.axs)
@@ -291,10 +356,7 @@ class plot2d (PlotBase):
         im = self.axs.contourf(*mesh, func, cmap="jet")
         self.fig.colorbar(im, ax=self.axs, shrink=0.9)
         self.fig.tight_layout()
-        if pngname == None:
-            self.SavePng_Serial(pngname)
-        else:
-            self.SavePng(pngname)
+        self.SavePng(pngname)
 
     def contourf_tri(self, x, y, z):
         self.new_fig()
@@ -309,6 +371,7 @@ class plot2d (PlotBase):
         mx, my = int((sy - ys) / dy), int((sx - xs) / dx)
         tx, ty = 1.1, 0.0
 
+        self.new_2Dfig()
         self.div_axs()
         self.ax_x.plot(mesh[0][mx, :], func[mx, :])
         self.ax_x.set_title("y = {:.2f}".format(sy))
@@ -333,6 +396,7 @@ class plot2d (PlotBase):
         mx, my = int((sy - ys) / dy), int((sx - xs) / dx)
         tx, ty = 1.1, 0.0
 
+        self.new_2Dfig()
         self.div_axs()
         self.axs.set_aspect('auto')
         self.ax_x.plot(mesh[0][mx, :], func[mx, :])
@@ -418,8 +482,8 @@ class plotpolar (plot2d):
 
 class plot3d (PlotBase):
 
-    def __init__(self):
-        PlotBase.__init__(self)
+    def __init__(self, aspect="equal", *args, **kwargs):
+        PlotBase.__init__(self, *args, **kwargs)
         self.dim = 3
         self.new_fig()
 
@@ -466,296 +530,6 @@ class plot3d (PlotBase):
         #self.axs.set_xlim3d(-10, 10)
         #self.axs.set_ylim3d(-10, 10)
         #self.axs.set_zlim3d(-10, 10)
-
-
-def pnt_from_axs(axs=gp_Ax3(), length=100):
-    vec = point_to_vector(axs.Location()) + \
-        dir_to_vec(axs.Direction()) * length
-    return vector_to_point(vec)
-
-
-def line_from_axs(axs=gp_Ax3(), length=100):
-    return make_edge(axs.Location(), pnt_from_axs(axs, length))
-
-
-def pnt_trf_vec(pnt=gp_Pnt(), vec=gp_Vec()):
-    v = point_to_vector(pnt)
-    v.Add(vec)
-    return vector_to_point(v)
-
-
-def set_trf(ax1=gp_Ax3(), ax2=gp_Ax3()):
-    trf = gp_Trsf()
-    trf.SetTransformation(ax2, ax1)
-    return trf
-
-
-def set_loc(ax1=gp_Ax3(), ax2=gp_Ax3()):
-    trf = set_trf(ax1, ax2)
-    loc = TopLoc_Location(trf)
-    return loc
-
-
-def trsf_scale(axs=gp_Ax3(), scale=1):
-    trf = gp_Trsf()
-    trf.SetDisplacement(gp_Ax3(), axs)
-    return trf
-
-
-def gen_ellipsoid(axs=gp_Ax3(), rxyz=[10, 20, 30]):
-    sphere = BRepPrimAPI_MakeSphere(gp_Ax2(), 1).Solid()
-    loc = set_loc(gp_Ax3(), axs)
-    mat = gp_Mat(
-        rxyz[0], 0, 0,
-        0, rxyz[1], 0,
-        0, 0, rxyz[2]
-    )
-    gtrf = gp_GTrsf(mat, gp_XYZ(0, 0, 0))
-    ellips = BRepBuilderAPI_GTransform(sphere, gtrf).Shape()
-    ellips.Location(loc)
-    return ellips
-
-
-def spl_face(px, py, pz, axs=gp_Ax3()):
-    nx, ny = px.shape
-    pnt_2d = TColgp_Array2OfPnt(1, nx, 1, ny)
-    for row in range(pnt_2d.LowerRow(), pnt_2d.UpperRow() + 1):
-        for col in range(pnt_2d.LowerCol(), pnt_2d.UpperCol() + 1):
-            i, j = row - 1, col - 1
-            pnt = gp_Pnt(px[i, j], py[i, j], pz[i, j])
-            pnt_2d.SetValue(row, col, pnt)
-            #print (i, j, px[i, j], py[i, j], pz[i, j])
-
-    api = GeomAPI_PointsToBSplineSurface(pnt_2d, 3, 8, GeomAbs_G2, 0.001)
-    api.Interpolate(pnt_2d)
-    #surface = BRepBuilderAPI_MakeFace(curve, 1e-6)
-    # return surface.Face()
-    face = BRepBuilderAPI_MakeFace(api.Surface(), 1e-6).Face()
-    face.Location(set_loc(gp_Ax3(), axs))
-    return face
-
-
-def spl_curv(px, py, pz):
-    num = px.size
-    pts = []
-    p_array = TColgp_Array1OfPnt(1, num)
-    for idx, t in enumerate(px):
-        x = px[idx]
-        y = py[idx]
-        z = pz[idx]
-        pnt = gp_Pnt(x, y, z)
-        pts.append(pnt)
-        p_array.SetValue(idx + 1, pnt)
-    api = GeomAPI_PointsToBSpline(p_array)
-    return p_array, api.Curve()
-
-
-def spl_curv_pts(pts=[gp_Pnt()]):
-    num = len(pts)
-    p_array = TColgp_Array1OfPnt(1, num)
-    for idx, pnt in enumerate(pts):
-        p_array.SetValue(idx + 1, pnt)
-    api = GeomAPI_PointsToBSpline(p_array)
-    return p_array, api.Curve()
-
-
-class GenCompound (object):
-
-    def __init__(self):
-        self.builder = BRep_Builder()
-        self.compound = TopoDS_Compound()
-        self.builder.MakeCompound(self.compound)
-
-
-class plotocc (SetDir):
-
-    def __init__(self):
-        self.display, self.start_display, self.add_menu, self.add_function = init_display()
-        self.base_axs = gp_Ax3()
-        SetDir.__init__(self)
-
-    def show_box(self, axs=gp_Ax3(), lxyz=[100, 100, 100]):
-        box = make_box(*lxyz)
-        ax1 = gp_Ax3(
-            gp_Pnt(-lxyz[0] / 2, -lxyz[1] / 2, -lxyz[2] / 2),
-            gp_Dir(0, 0, 1)
-        )
-        trf = gp_Trsf()
-        trf.SetTransformation(axs, gp_Ax3())
-        trf.SetTransformation(ax1, gp_Ax3())
-        box.Location(TopLoc_Location(trf))
-        self.display.DisplayShape(axs.Location())
-        self.show_axs_pln(axs, scale=lxyz[0])
-        self.display.DisplayShape(box, transparency=0.7)
-
-    def show_pnt(self, xyz=[0, 0, 0]):
-        self.display.DisplayShape(gp_Pnt(*xyz))
-
-    def show_pts(self, pts=[gp_Pnt()], num=1):
-        for p in pts[::num]:
-            self.display.DisplayShape(p)
-        self.display.DisplayShape(make_polygon(pts))
-
-    def show_ball(self, scale=100, trans=0.5):
-        shape = BRepPrimAPI_MakeSphere(scale).Shape()
-        self.display.DisplayShape(shape, transparency=trans)
-
-    def show_vec(self, beam=gp_Ax3(), scale=1.0):
-        pnt = beam.Location()
-        vec = dir_to_vec(beam.Direction()).Scaled(scale)
-        print(vec.Magnitude())
-        self.display.DisplayVector(vec, pnt)
-
-    def show_ellipsoid(self, axs=gp_Ax3(), rxyz=[10., 10., 10.], trans=0.5):
-        shape = gen_ellipsoid(axs, rxyz)
-        self.display.DisplayShape(shape, transparency=trans, color="BLUE")
-        return shape
-
-    def show_axs_pln(self, axs=gp_Ax3(), scale=100):
-        pnt = axs.Location()
-        dx = axs.XDirection()
-        dy = axs.YDirection()
-        dz = axs.Direction()
-        vx = dir_to_vec(dx).Scaled(1 * scale)
-        vy = dir_to_vec(dy).Scaled(2 * scale)
-        vz = dir_to_vec(dz).Scaled(3 * scale)
-
-        pnt_x = pnt_trf_vec(pnt, vx)
-        pnt_y = pnt_trf_vec(pnt, vy)
-        pnt_z = pnt_trf_vec(pnt, vz)
-        self.display.DisplayShape(pnt)
-        self.display.DisplayShape(make_line(pnt, pnt_x), color="RED")
-        self.display.DisplayShape(make_line(pnt, pnt_y), color="GREEN")
-        self.display.DisplayShape(make_line(pnt, pnt_z), color="BLUE")
-
-    def show_plane(self, axs=gp_Ax3(), scale=100):
-        pnt = axs.Location()
-        vec = dir_to_vec(axs.Direction())
-        pln = make_plane(pnt, vec, -scale, scale, -scale, scale)
-        self.display.DisplayShape(pln)
-
-    def make_EllipWire(self, rxy=[1.0, 1.0], shft=0.0, axs=gp_Ax3()):
-        rx, ry = rxy
-        if rx > ry:
-            major_radi = rx
-            minor_radi = ry
-            axis = gp_Ax2()
-            axis.SetXDirection(axis.XDirection())
-        else:
-            major_radi = ry
-            minor_radi = rx
-            axis = gp_Ax2()
-            axis.SetXDirection(axis.YDirection())
-        axis.Rotate(axis.Axis(), np.deg2rad(shft))
-        elip = make_edge(gp_Elips(axis, major_radi, minor_radi))
-        poly = make_wire(elip)
-        poly.Location(set_loc(gp_Ax3(), axs))
-        return poly
-
-    def make_PolyWire(self, num=6, radi=1.0, shft=0.0, axs=gp_Ax3(), skin=None):
-        lxy = radi
-        pnts = []
-        angl = 360 / num
-        for i in range(num):
-            thet = np.deg2rad(i * angl) + np.deg2rad(shft)
-            x, y = radi * np.sin(thet), radi * np.cos(thet)
-            pnts.append(gp_Pnt(x, y, 0))
-        pnts.append(pnts[0])
-        poly = make_polygon(pnts)
-        poly.Location(set_loc(gp_Ax3(), axs))
-
-        n_sided = BRepFill_Filling()
-        for e in Topo(poly).edges():
-            n_sided.Add(e, GeomAbs_C0)
-        n_sided.Build()
-        face = n_sided.Face()
-        if skin == None:
-            return poly
-        elif skin == 0:
-            return face
-        else:
-            solid = BRepOffset_MakeOffset(
-                face, skin, 1.0E-5, BRepOffset_Skin, False, True, GeomAbs_Arc, True, True)
-            return solid.Shape()
-
-    def make_StarWire(self, num=5, radi=[2.0, 1.0], shft=0.0, axs=gp_Ax3(), skin=None):
-        lxy = radi
-        pnts = []
-        angl = 360 / num
-        for i in range(num):
-            a_thet = np.deg2rad(i * angl) + np.deg2rad(shft)
-            ax, ay = radi[0] * np.sin(a_thet), radi[0] * np.cos(a_thet)
-            pnts.append(gp_Pnt(ax, ay, 0))
-            b_thet = a_thet + np.deg2rad(angl) / 2
-            bx, by = radi[1] * np.sin(b_thet), radi[1] * np.cos(b_thet)
-            pnts.append(gp_Pnt(bx, by, 0))
-        pnts.append(pnts[0])
-        poly = make_polygon(pnts)
-        poly.Location(set_loc(gp_Ax3(), axs))
-
-        n_sided = BRepFill_Filling()
-        for e in Topo(poly).edges():
-            n_sided.Add(e, GeomAbs_C0)
-        n_sided.Build()
-        face = n_sided.Face()
-        if skin == None:
-            return poly
-        elif skin == 0:
-            return face
-        else:
-            solid = BRepOffset_MakeOffset(
-                face, skin, 1.0E-5, BRepOffset_Skin, False, True, GeomAbs_Arc, True, True)
-            return solid.Shape()
-
-    def make_FaceByOrder(self, pts=[]):
-        pnt = []
-        for p in pts:
-            pnt.append([p.X(), p.Y(), p.Z()])
-
-        pnt = np.array(pnt)
-        cov = ConvexHull(pnt, qhull_options='QJ')
-
-        #pts_ord = []
-        # print(cov)
-        # print(cov.simplices)
-        # print(cov.vertices)
-        # for idx in cov.vertices:
-        #    print(idx, pnt[idx])
-        #    pts_ord.append(gp_Pnt(*pnt[idx]))
-
-        #poly = make_polygon(pts_ord)
-        poly = make_polygon(pts)
-        n_sided = BRepFill_Filling()
-        for e in Topo(poly).edges():
-            n_sided.Add(e, GeomAbs_C0)
-        n_sided.Build()
-        face = n_sided.Face()
-        return face
-
-    def AddManipulator(self):
-        self.manip = AIS_Manipulator(self.base_axs.Ax2())
-        ais_shp = self.display.DisplayShape(
-            self.base_axs.Location(),
-            update=True
-        )
-        self.manip.Attach(ais_shp)
-
-    def SaveMenu(self):
-        self.add_menu("File")
-        self.add_function("File", self.export_cap)
-
-    def export_cap(self):
-        pngname = create_tempnum(self.rootname, self.tmpdir, ".png")
-        self.display.View.Dump(pngname)
-
-    def export_stp(self, shp):
-        stpname = create_tempnum(self.rootname, self.tmpdir, ".stp")
-        write_step_file(shp, stpname)
-
-    def show(self):
-        self.display.FitAll()
-        self.display.View.Dump(self.tempname + ".png")
-        self.start_display()
 
 
 class LineDrawer(object):

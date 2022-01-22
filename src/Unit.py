@@ -2,8 +2,8 @@ import numpy as np
 import scipy.constants as cnt
 
 SI = {
-    'nm': 10**(-9), 'um': 10**(-6), 'mm': 0.001, 'cm': 0.01, 'm': 1.0, 'km': 1000.,
-    'THz': 10**12, 'GHz': 10**9, 'MHz': 10**6, 'kHz': 10**3, 'Hz': 1.0,
+    'um': 10**(-6), 'mm': 0.001, 'cm': 0.01, 'm': 1.0, 'km': 1000.,
+    'GHz': 10**9, 'MHz': 10**6, 'kHz': 10**3, 'Hz': 1.0,
     'ns': 10**(-9), 'us': 10**(-6), 'ms': 10**(-3), 's': 1.0,
     'min': 60.0, 'h': 60.0 * 60.0, 'day': 60.0 * 60.0 * 24.0,
     'month': 60.0 * 60.0 * 24.0 * 30,
@@ -20,28 +20,16 @@ def convert(unit_in="cm", unit_out="mm"):
     return SI[unit_in] / SI[unit_out]
 
 
-def convert_freq_to_wave(num=100.0, unit_in="GHz", unit_out="mm"):
-    """
-    v = f * lambda
-    """
-    freq = num * SI[unit_in] / SI["Hz"]
-    wave = cnt.c / freq
-    return wave * SI["m"] / SI[unit_out]
-
-
-def convert_wave_to_freq(num=1.0, unit_in="mm", unit_out="GHz"):
-    """
-    v = f * lambda
-    """
-    wave = num * SI[unit_in] / SI["m"]
-    freq = cnt.c / wave
-    return freq * SI["Hz"] / SI[unit_out]
-
-
 def convert_freq_to_time(num=1.0, unit_in="Hz", unit_out="s"):
     freq = num * SI[unit_in] / SI["Hz"]
     time_s = 1 / freq
     return time_s * SI["s"] / SI[unit_out]
+
+
+def convert_freq_to_wave(num=1.0, unit_in="Hz", unit_out="mm"):
+    freq = num * SI[unit_in] / SI["Hz"]
+    wave_m = cnt.c / freq
+    return wave_m * SI["m"] / SI[unit_out]
 
 
 def convert_time_to_freq(num=1.0, unit_in="s", unit_out="Hz"):

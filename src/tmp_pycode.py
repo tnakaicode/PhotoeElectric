@@ -9,7 +9,7 @@ import glob
 import imageio
 from optparse import OptionParser
 
-sys.path.append(os.path.join("./"))
+sys.path.append(os.path.join("../"))
 from src.base import plot2d
 
 import logging
