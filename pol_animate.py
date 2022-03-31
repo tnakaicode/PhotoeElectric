@@ -7,7 +7,7 @@ import os
 import time
 import glob
 import imageio
-from optparse import OptionParser
+import argparse
 
 sys.path.append(os.path.join("./"))
 from base import plot2d, create_tempdir
@@ -18,10 +18,10 @@ logging.getLogger('PIL').setLevel(logging.ERROR)
 
 if __name__ == '__main__':
     argvs = sys.argv
-    parser = OptionParser()
-    parser.add_option("--dir", dest="dir", default=None)
-    opt, argc = parser.parse_args(argvs)
-    print(opt, argc)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dir", dest="dir", default=None)
+    opt = parser.parse_args()
+    print(opt, argvs)
 
     if opt.dir == None:
         tmpdir = create_tempdir()

@@ -7,7 +7,7 @@ import os
 import time
 import glob
 import imageio
-from optparse import OptionParser
+import argparse
 
 sys.path.append(os.path.join("./"))
 from src.base import plot2d

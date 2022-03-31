@@ -7,7 +7,7 @@ import time
 import glob
 import imageio
 import scipy.constants as cnt
-from optparse import OptionParser
+import argparse
 from scipy.integrate import trapz
 
 """
@@ -20,14 +20,14 @@ and then tried to figure out how much light we'd see at various angles.
 
 if __name__ == '__main__':
     argvs = sys.argv
-    parser = OptionParser()
-    parser.add_option("--dir", dest="dir", default="./")
-    parser.add_option("--file", dest="file", default="plot_prop_mat.txt")
-    parser.add_option("--freq", dest="freq", default=100.0, type="float")
-    parser.add_option("--pxyz", dest="pxyz",
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dir", dest="dir", default="./")
+    parser.add_argument("--file", dest="file", default="plot_prop_mat.txt")
+    parser.add_argument("--freq", dest="freq", default=100.0, type="float")
+    parser.add_argument("--pxyz", dest="pxyz",
                       default=[0.0, 0.0, 0.0], type="float", nargs=3)
-    opt, argc = parser.parse_args(argvs)
-    print(opt, argc)
+    opt = parser.parse_args()
+    print(opt, argvs)
 
     # refractive index of NaCl
     m = 1.536
