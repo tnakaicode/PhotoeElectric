@@ -21,7 +21,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--dir", dest="dir", default="./")
     parser.add_argument("--n12", dest="n12",
-                      default=[1.5, 1.0], type="float", nargs=2)
+                      default=[1.5, 1.0], type=float, nargs=2)
     opt = parser.parse_args()
     print(opt, argvs)
 
